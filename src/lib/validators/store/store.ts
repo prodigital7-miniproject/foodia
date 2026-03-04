@@ -29,7 +29,6 @@ export const createStoreSchema = z.object({
     .max(30, "가격대는 30자 이하여야 합니다.")
     .optional(),
   imgUrl: z
-    .string()
     .url("올바른 이미지 URL 형식이어야 합니다.")
     .max(255, "이미지 URL은 255자 이하여야 합니다.")
     .optional(),
