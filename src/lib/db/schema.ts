@@ -21,7 +21,7 @@ const appSchema = pgSchema("foodia");
 export const storeTable = appSchema.table(
   "stores",
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
+    googlePlaceId: varchar("google_place_id", { length: 255 }).primaryKey(),
     name: varchar("name", { length: 100 }).notNull(),
     category: varchar("category", { length: 50 }).notNull(),
     address: varchar("address", { length: 255 }).notNull(),
@@ -71,10 +71,8 @@ export const reviewTable = appSchema.table(
   "reviews",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    storeId: bigint("store_id", { mode: "number" })
-      .notNull()
-      .references(() => storeTable.id, { onDelete: "cascade" }),
-    authorId: varchar("author_id", { length: 50 }).notNull(),
+    googlePlaceId: varchar("google_place_id", { length: 255 }).notNull(),
+    nickname: varchar("nickname", { length: 50 }).notNull(),
     imgUrl: varchar("img_url", { length: 255 }),
     rating: integer("rating").notNull(),
     content: varchar("content", { length: 255 }).notNull(),
@@ -97,8 +95,8 @@ export const reviewTable = appSchema.table(
       "reviews_rating_check",
       sql`${table.rating} >= 1 AND ${table.rating} <= 5`,
     ),
-    index("reviews_idx_store_id").on(table.storeId),
-    index("reviews_idx_author_id").on(table.authorId),
+    index("reviews_idx_google_place_id").on(table.googlePlaceId),
+    index("reviews_idx_nickname").on(table.nickname),
   ],
 );
 
@@ -113,9 +111,9 @@ export const storeFoodTable = appSchema.table(
     foodId: bigint("food_id", { mode: "number" })
       .notNull()
       .references(() => foodTable.id, { onDelete: "cascade" }),
-    storeId: bigint("store_id", { mode: "number" })
+    googlePlaceId: varchar("google_place_id", { length: 255 })
       .notNull()
-      .references(() => storeTable.id, { onDelete: "cascade" }),
+      .references(() => storeTable.googlePlaceId, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "date",
@@ -125,9 +123,9 @@ export const storeFoodTable = appSchema.table(
   },
   (table: Parameters<Parameters<typeof appSchema.table>[2]>[0]) => [
     index("store_foods_idx_food_id").on(table.foodId),
-    index("store_foods_idx_store_id").on(table.storeId),
+    index("store_foods_idx_google_place_id").on(table.googlePlaceId),
     uniqueIndex("store_foods_unique_store_food").on(
-      table.storeId,
+      table.googlePlaceId,
       table.foodId,
     ),
   ],
@@ -140,9 +138,9 @@ export const togetherPostTable = appSchema.table(
   "together_posts",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    storeId: bigint("store_id", { mode: "number" })
+    googlePlaceId: varchar("google_place_id", { length: 255 })
       .notNull()
-      .references(() => storeTable.id, { onDelete: "cascade" }),
+      .references(() => storeTable.googlePlaceId, { onDelete: "cascade" }),
     title: varchar("title", { length: 100 }).notNull(),
     content: varchar("content", { length: 300 }).notNull(),
     status: varchar("status", { length: 20 }).notNull().default("open"),
@@ -166,7 +164,7 @@ export const togetherPostTable = appSchema.table(
       "together_posts_status_check",
       sql`${table.status} IN ('open', 'closed')`,
     ),
-    index("together_posts_idx_store_id").on(table.storeId),
+    index("together_posts_idx_google_place_id").on(table.googlePlaceId),
     index("together_posts_idx_status").on(table.status),
   ],
 );
@@ -215,7 +213,6 @@ type RelationHelpers = Parameters<typeof relations>[1] extends (
 export const storeRelations = relations(
   storeTable,
   ({ many }: RelationHelpers) => ({
-    reviews: many(reviewTable),
     storeFoods: many(storeFoodTable),
     togetherPosts: many(togetherPostTable),
   }),
@@ -228,16 +225,6 @@ export const foodRelations = relations(
   }),
 );
 
-export const reviewRelations = relations(
-  reviewTable,
-  ({ one }: RelationHelpers) => ({
-    store: one(storeTable, {
-      fields: [reviewTable.storeId],
-      references: [storeTable.id],
-    }),
-  }),
-);
-
 export const storeFoodRelations = relations(
   storeFoodTable,
   ({ one }: RelationHelpers) => ({
@@ -246,8 +233,8 @@ export const storeFoodRelations = relations(
       references: [foodTable.id],
     }),
     store: one(storeTable, {
-      fields: [storeFoodTable.storeId],
-      references: [storeTable.id],
+      fields: [storeFoodTable.googlePlaceId],
+      references: [storeTable.googlePlaceId],
     }),
   }),
 );
@@ -256,8 +243,8 @@ export const togetherPostRelations = relations(
   togetherPostTable,
   ({ one, many }: RelationHelpers) => ({
     store: one(storeTable, {
-      fields: [togetherPostTable.storeId],
-      references: [storeTable.id],
+      fields: [togetherPostTable.googlePlaceId],
+      references: [storeTable.googlePlaceId],
     }),
     participants: many(togetherParticipantTable),
   }),
