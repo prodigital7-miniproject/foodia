@@ -43,7 +43,9 @@ export function RestaurantCard({ restaurant, onBookmark }: RestaurantCardProps) 
             <div className="flex items-center gap-1">
               <Star size={16} className="fill-orange-400 text-orange-400" />
               <span className="text-sm font-medium text-gray-900">{restaurant.rating}</span>
-              <span className="text-xs text-gray-500">({restaurant.reviewCount})</span>
+              {restaurant.reviewCount > 0 && (
+                <span className="text-xs text-gray-500">(리뷰 {restaurant.reviewCount})</span>
+              )}
             </div>
             <span className="text-xs text-gray-400">•</span>
             <div className="flex items-center gap-1">

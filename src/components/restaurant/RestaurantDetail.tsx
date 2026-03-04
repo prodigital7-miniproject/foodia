@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Star, MapPin, Clock, Bookmark, MessageCircle, Users } from "lucide-react";
-import { mockRestaurants, mockTogetherPosts } from "@/lib/data/mockData";
+import { mockTogetherPosts } from "@/lib/data/mockData";
+import type { Restaurant } from "@/lib/types";
 import { BottomNav } from "@/components/layout/BottomNav";
 
 export function RestaurantDetail() {
@@ -12,14 +13,41 @@ export function RestaurantDetail() {
   const id = params.id as string;
   const router = useRouter();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const restaurant = mockRestaurants.find((r) => r.id === id);
+  useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    fetch(`/api/places/${encodeURIComponent(id)}`)
+      .then((res) => {
+        if (!res.ok) return res.json().then((b) => Promise.reject(b?.error || res.statusText));
+        return res.json();
+      })
+      .then((data: Restaurant) => setRestaurant(data))
+      .catch((err) => setError(typeof err === "string" ? err : err?.message || "정보를 불러오지 못했습니다."))
+      .finally(() => setLoading(false));
+  }, [id]);
+
   const togetherPosts = mockTogetherPosts.filter((p) => p.restaurantId === id);
 
-  if (!restaurant) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">맛집을 찾을 수 없습니다</p>
+        <p className="text-gray-500">로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (error || !restaurant) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">{error || "맛집을 찾을 수 없습니다"}</p>
       </div>
     );
   }
@@ -99,17 +127,21 @@ export function RestaurantDetail() {
           </div>
         </div>
 
-        {/* Menu */}
+        {/* Menu - Google Places API는 메뉴 목록을 제공하지 않음 */}
         <div className="bg-white px-4 py-6 border-b border-gray-200">
           <h2 className="font-semibold text-gray-900 mb-4">대표 메뉴</h2>
-          <div className="space-y-3">
-            {restaurant.menuItems.map((item, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <span className="text-gray-700">{item.name}</span>
-                <span className="font-medium text-gray-900">{item.price}</span>
-              </div>
-            ))}
-          </div>
+          {restaurant.menuItems.length > 0 ? (
+            <div className="space-y-3">
+              {restaurant.menuItems.map((item, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <span className="text-gray-700">{item.name}</span>
+                  <span className="font-medium text-gray-900">{item.price}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">메뉴 정보는 Google에서 제공하지 않아요. 리뷰에서 확인해보세요.</p>
+          )}
         </div>
 
         {/* Together Posts Preview */}
@@ -149,10 +181,10 @@ export function RestaurantDetail() {
           </div>
         )}
 
-        {/* Reviews */}
+        {/* Reviews - 우리 서비스 사용자 리뷰만 표시 */}
         <div className="bg-white px-4 py-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-900">리뷰 ({restaurant.reviewCount})</h2>
+            <h2 className="font-semibold text-gray-900">리뷰 ({restaurant.reviews.length})</h2>
             <Link
               href={`/review/write/${restaurant.id}`}
               className="text-sm text-orange-600 font-medium"
@@ -161,7 +193,10 @@ export function RestaurantDetail() {
             </Link>
           </div>
           <div className="space-y-4">
-            {restaurant.reviews.map((review) => (
+            {restaurant.reviews.length === 0 ? (
+              <p className="text-sm text-gray-500">아직 리뷰가 없어요. 첫 리뷰를 작성해보세요!</p>
+            ) : (
+              restaurant.reviews.map((review) => (
               <div key={review.id} className="pb-4 border-b border-gray-100 last:border-0">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-900">{review.author}</span>
@@ -183,7 +218,8 @@ export function RestaurantDetail() {
                 </div>
                 <span className="text-xs text-gray-400 mt-2 block">{review.date}</span>
               </div>
-            ))}
+            ))
+            )}
           </div>
         </div>
       </div>

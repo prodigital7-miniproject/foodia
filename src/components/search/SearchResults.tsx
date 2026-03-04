@@ -1,23 +1,26 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowLeft, SlidersHorizontal } from "lucide-react";
 import { SearchBar } from "@/components/search/SearchBar";
 import { FilterChips } from "@/components/search/FilterChips";
 import { RestaurantCard } from "@/components/restaurant/RestaurantCard";
 import { BottomNav } from "@/components/layout/BottomNav";
-import { mockRestaurants } from "@/lib/data/mockData";
+import type { Restaurant } from "@/lib/types";
 import { FoodCategory, PriceRange, SituationTag, SortOption } from "@/lib/types";
 
 export function SearchResults() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const locationParam = searchParams.get("location") || "성수역";
   const categoryParam = searchParams.get("category");
 
   const [searchQuery, setSearchQuery] = useState(locationParam);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<FoodCategory>(
     (categoryParam as FoodCategory) || "전체"
   );
@@ -26,37 +29,51 @@ export function SearchResults() {
   const [sortBy, setSortBy] = useState<SortOption>("distance");
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
 
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetch(`/api/places/search?location=${encodeURIComponent(locationParam)}`)
+      .then((res) => {
+        if (!res.ok) return res.json().then((b) => Promise.reject(b?.error || res.statusText));
+        return res.json();
+      })
+      .then((data: Restaurant[]) => setRestaurants(data))
+      .catch((err) => setError(typeof err === "string" ? err : err?.message || "검색에 실패했습니다."))
+      .finally(() => setLoading(false));
+  }, [locationParam]);
+
   const foodCategories: FoodCategory[] = ["전체", "한식", "중식", "일식", "양식", "카페"];
   const priceRanges: PriceRange[] = ["전체", "1만원 이하", "1-2만원", "2만원 이상"];
   const situationTags: SituationTag[] = ["전체", "혼밥", "데이트", "친구모임"];
 
   const filteredRestaurants = useMemo(() => {
-    let result = mockRestaurants.map(r => ({
+    let result = restaurants.map((r) => ({
       ...r,
-      isBookmarked: bookmarkedIds.has(r.id)
+      isBookmarked: bookmarkedIds.has(r.id),
     }));
 
     if (selectedCategory !== "전체") {
-      result = result.filter(r => r.category === selectedCategory);
+      result = result.filter((r) => r.category === selectedCategory);
     }
 
     if (selectedPrice !== "전체") {
-      result = result.filter(r => r.priceRange === selectedPrice);
+      result = result.filter((r) => r.priceRange === selectedPrice);
     }
 
     if (selectedSituation !== "전체") {
-      result = result.filter(r => r.tags.includes(selectedSituation));
+      result = result.filter((r) => r.tags.includes(selectedSituation));
     }
 
-    // Sort
     if (sortBy === "rating") {
       result.sort((a, b) => b.rating - a.rating);
-    } else {
-      result.sort((a, b) => parseInt(a.distance) - parseInt(b.distance));
     }
-
     return result;
-  }, [selectedCategory, selectedPrice, selectedSituation, sortBy, bookmarkedIds]);
+  }, [restaurants, selectedCategory, selectedPrice, selectedSituation, sortBy, bookmarkedIds]);
+
+  const handleSearchSubmit = () => {
+    const q = searchQuery.trim() || locationParam;
+    router.push(`/search?location=${encodeURIComponent(q)}`);
+  };
 
   const handleBookmark = (id: string) => {
     setBookmarkedIds(prev => {
@@ -84,6 +101,7 @@ export function SearchResults() {
                 placeholder="다른 지역 검색"
                 value={searchQuery}
                 onChange={setSearchQuery}
+                onSubmit={handleSearchSubmit}
               />
             </div>
           </div>
@@ -91,6 +109,18 @@ export function SearchResults() {
       </div>
 
       <div className="max-w-md mx-auto px-4 py-4">
+        {loading && (
+          <div className="flex justify-center py-12">
+            <p className="text-gray-500">맛집 검색 중...</p>
+          </div>
+        )}
+        {error && (
+          <div className="py-4 px-4 bg-red-50 border border-red-100 rounded-lg mb-4">
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
+        {!loading && !error && (
+          <>
         {/* Location & Result Count */}
         <div className="mb-4">
           <h2 className="text-xl font-bold text-gray-900 mb-1">{locationParam} 맛집</h2>
@@ -172,6 +202,8 @@ export function SearchResults() {
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
 
       <BottomNav />
