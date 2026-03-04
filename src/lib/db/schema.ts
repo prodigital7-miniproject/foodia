@@ -61,6 +61,7 @@ export const foodTable = appSchema.table(
   },
   (table: Parameters<Parameters<typeof appSchema.table>[2]>[0]) => [
     index("foods_idx_name").on(table.name),
+    uniqueIndex("foods_unique_name").on(table.name),
   ],
 );
 
@@ -71,7 +72,9 @@ export const reviewTable = appSchema.table(
   "reviews",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    googlePlaceId: varchar("google_place_id", { length: 255 }).notNull(),
+    googlePlaceId: varchar("google_place_id", { length: 255 })
+      .notNull()
+      .references(() => storeTable.googlePlaceId, { onDelete: "cascade" }),
     nickname: varchar("nickname", { length: 50 }).notNull(),
     imgUrl: varchar("img_url", { length: 255 }),
     rating: integer("rating").notNull(),
@@ -124,7 +127,7 @@ export const storeFoodTable = appSchema.table(
   (table: Parameters<Parameters<typeof appSchema.table>[2]>[0]) => [
     index("store_foods_idx_food_id").on(table.foodId),
     index("store_foods_idx_google_place_id").on(table.googlePlaceId),
-    uniqueIndex("store_foods_unique_store_food").on(
+    uniqueIndex("store_foods_unique_google_place_food").on(
       table.googlePlaceId,
       table.foodId,
     ),
@@ -171,9 +174,6 @@ export const togetherPostTable = appSchema.table(
 
 /**
  * together_participants
- * - id: 별도 PK + auto increment
- * - togetherPostId: together_posts.id FK
- * - 같은 게시글에 같은 userId 중복 참여 방지
  */
 export const togetherParticipantTable = appSchema.table(
   "together_participants",
@@ -213,6 +213,7 @@ type RelationHelpers = Parameters<typeof relations>[1] extends (
 export const storeRelations = relations(
   storeTable,
   ({ many }: RelationHelpers) => ({
+    reviews: many(reviewTable),
     storeFoods: many(storeFoodTable),
     togetherPosts: many(togetherPostTable),
   }),
@@ -222,6 +223,16 @@ export const foodRelations = relations(
   foodTable,
   ({ many }: RelationHelpers) => ({
     storeFoods: many(storeFoodTable),
+  }),
+);
+
+export const reviewRelations = relations(
+  reviewTable,
+  ({ one }: RelationHelpers) => ({
+    store: one(storeTable, {
+      fields: [reviewTable.googlePlaceId],
+      references: [storeTable.googlePlaceId],
+    }),
   }),
 );
 
