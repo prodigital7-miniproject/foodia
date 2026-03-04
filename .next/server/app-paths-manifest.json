@@ -1,8 +1,8 @@
 {
-  "/api/places/search/route": "app/api/places/search/route.js",
-  "/api/places/photo/route": "app/api/places/photo/route.js",
   "/api/places/[placeId]/route": "app/api/places/[placeId]/route.js",
-  "/restaurant/[id]/page": "app/restaurant/[id]/page.js",
+  "/api/places/photo/route": "app/api/places/photo/route.js",
+  "/page": "app/page.js",
   "/search/page": "app/search/page.js",
-  "/page": "app/page.js"
+  "/restaurant/[id]/page": "app/restaurant/[id]/page.js",
+  "/review/write/[id]/page": "app/review/write/[id]/page.js"
 }
