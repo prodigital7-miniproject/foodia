@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { TogetherCard } from './TogetherCard';
 
 export default function TogetherSlider() {
@@ -18,7 +18,7 @@ export default function TogetherSlider() {
   ];
 
 
-  const moveScroll = (direction: 'left' | 'right') => {
+  const moveScroll = useCallback((direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
     const { scrollLeft, clientWidth } = scrollRef.current;
     const moveDistance = clientWidth * 0.8; 
@@ -27,7 +27,7 @@ export default function TogetherSlider() {
       left: direction === 'left' ? scrollLeft - moveDistance : scrollLeft + moveDistance,
       behavior: 'smooth',
     });
-  };
+    }, []);
 
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function TogetherSlider() {
       } else {
         moveScroll('right');
       }
-    }, 3000); // 2초마다 이동
+    }, 3000); // 3초마다 이동
 
     return () => clearInterval(interval);
   }, [isPaused]);

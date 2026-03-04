@@ -9,8 +9,8 @@ export default function TogetherList() {
     const router = useRouter();
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const handleTogetherClick = (togtherId: string) => {
-        router.push(`/together/${encodeURIComponent(togtherId)}`);
+    const handleTogetherClick = (togetherId: string) => {
+        router.push(`/together/${encodeURIComponent(togetherId)}`);
       };
 
   const allData = [

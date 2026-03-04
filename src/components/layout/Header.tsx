@@ -1,10 +1,6 @@
 
 "use client";
 
-import { Home, Search, Bookmark, User } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-
 export function Header() {
     return (
       // fixed top-0으로 변경하여 상단에 고정합니다.
