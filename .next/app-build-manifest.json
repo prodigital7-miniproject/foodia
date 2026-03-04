@@ -16,16 +16,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/search/page.js"
     ],
-    "/restaurant/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/restaurant/[id]/page.js"
-    ],
-    "/review/write/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/review/write/[id]/page.js"
-    ],
     "/api/places/search/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -36,15 +26,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/api/places/photo/route.js"
     ],
+    "/restaurant/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/restaurant/[id]/page.js"
+    ],
     "/api/places/[placeId]/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/places/[placeId]/route.js"
-    ],
-    "/_not-found/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
     ]
   }
 }
