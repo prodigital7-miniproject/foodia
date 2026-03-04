@@ -1,5 +1,5 @@
 {
-  "id": "47b886fc-7508-4270-a90d-8bddd3906c1e",
+  "id": "9b92dde6-4513-4e33-87b4-bcc0e71d2b6d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -36,6 +36,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "foods_unique_name": {
+          "name": "foods_unique_name",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -55,14 +70,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "store_id": {
-          "name": "store_id",
-          "type": "bigint",
+        "google_place_id": {
+          "name": "google_place_id",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },
-        "author_id": {
-          "name": "author_id",
+        "nickname": {
+          "name": "nickname",
           "type": "varchar(50)",
           "primaryKey": false,
           "notNull": true
@@ -101,11 +116,11 @@
         }
       },
       "indexes": {
-        "reviews_idx_store_id": {
-          "name": "reviews_idx_store_id",
+        "reviews_idx_google_place_id": {
+          "name": "reviews_idx_google_place_id",
           "columns": [
             {
-              "expression": "store_id",
+              "expression": "google_place_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -116,11 +131,11 @@
           "method": "btree",
           "with": {}
         },
-        "reviews_idx_author_id": {
-          "name": "reviews_idx_author_id",
+        "reviews_idx_nickname": {
+          "name": "reviews_idx_nickname",
           "columns": [
             {
-              "expression": "author_id",
+              "expression": "nickname",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -133,16 +148,16 @@
         }
       },
       "foreignKeys": {
-        "reviews_store_id_stores_id_fk": {
-          "name": "reviews_store_id_stores_id_fk",
+        "reviews_google_place_id_stores_google_place_id_fk": {
+          "name": "reviews_google_place_id_stores_google_place_id_fk",
           "tableFrom": "reviews",
           "tableTo": "stores",
           "schemaTo": "foodia",
           "columnsFrom": [
-            "store_id"
+            "google_place_id"
           ],
           "columnsTo": [
-            "id"
+            "google_place_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -175,9 +190,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "store_id": {
-          "name": "store_id",
-          "type": "bigint",
+        "google_place_id": {
+          "name": "google_place_id",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },
@@ -205,11 +220,11 @@
           "method": "btree",
           "with": {}
         },
-        "store_foods_idx_store_id": {
-          "name": "store_foods_idx_store_id",
+        "store_foods_idx_google_place_id": {
+          "name": "store_foods_idx_google_place_id",
           "columns": [
             {
-              "expression": "store_id",
+              "expression": "google_place_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -220,11 +235,11 @@
           "method": "btree",
           "with": {}
         },
-        "store_foods_unique_store_food": {
-          "name": "store_foods_unique_store_food",
+        "store_foods_unique_google_place_food": {
+          "name": "store_foods_unique_google_place_food",
           "columns": [
             {
-              "expression": "store_id",
+              "expression": "google_place_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -257,16 +272,16 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "store_foods_store_id_stores_id_fk": {
-          "name": "store_foods_store_id_stores_id_fk",
+        "store_foods_google_place_id_stores_google_place_id_fk": {
+          "name": "store_foods_google_place_id_stores_google_place_id_fk",
           "tableFrom": "store_foods",
           "tableTo": "stores",
           "schemaTo": "foodia",
           "columnsFrom": [
-            "store_id"
+            "google_place_id"
           ],
           "columnsTo": [
-            "id"
+            "google_place_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -282,9 +297,9 @@
       "name": "stores",
       "schema": "foodia",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigserial",
+        "google_place_id": {
+          "name": "google_place_id",
+          "type": "varchar(255)",
           "primaryKey": true,
           "notNull": true
         },
@@ -506,9 +521,9 @@
           "primaryKey": true,
           "notNull": true
         },
-        "store_id": {
-          "name": "store_id",
-          "type": "bigint",
+        "google_place_id": {
+          "name": "google_place_id",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },
@@ -554,11 +569,11 @@
         }
       },
       "indexes": {
-        "together_posts_idx_store_id": {
-          "name": "together_posts_idx_store_id",
+        "together_posts_idx_google_place_id": {
+          "name": "together_posts_idx_google_place_id",
           "columns": [
             {
-              "expression": "store_id",
+              "expression": "google_place_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -586,16 +601,16 @@
         }
       },
       "foreignKeys": {
-        "together_posts_store_id_stores_id_fk": {
-          "name": "together_posts_store_id_stores_id_fk",
+        "together_posts_google_place_id_stores_google_place_id_fk": {
+          "name": "together_posts_google_place_id_stores_google_place_id_fk",
           "tableFrom": "together_posts",
           "tableTo": "stores",
           "schemaTo": "foodia",
           "columnsFrom": [
-            "store_id"
+            "google_place_id"
           ],
           "columnsTo": [
-            "id"
+            "google_place_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
