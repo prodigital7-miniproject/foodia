@@ -17,7 +17,7 @@ export function SearchBar({ placeholder = "지역명을 검색하세요", value,
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && onSubmit?.()}
-        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-full text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
+        className="w-full pl-12 pr-4 py-3 bg-white border-gray-200 rounded-full text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
       />
     </div>
   );
