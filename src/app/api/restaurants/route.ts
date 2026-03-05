@@ -17,11 +17,18 @@ const CATEGORY_ALIAS: Record<string, string[]> = {
   카페: ["카페", "카페/디저트", "디저트", "베이커리"],
 };
 
-/** 화면 가격대 필터 → DB에 저장돼 있을 수 있는 값들 (표기 차이 대응) */
+/** 화면 가격대 필터 → DB 실제 저장값 (price_range / food_price_range) */
 const PRICE_RANGE_ALIAS: Record<string, string[]> = {
-  "1만원 이하": ["1만원 이하", "1만원미만", "만원 이하", "~1만원", "1만원"],
-  "1-2만원": ["1-2만원", "1~2만원", "1만원~2만원", "1-2만원", "1만원-2만원"],
-  "2만원 이상": ["2만원 이상", "2만원초과", "2만원~", "2만원 이상"],
+  "1만원 이하": ["5천원 미만", "5천원대", "1만원대"],
+  "1-2만원": ["1.2만원대", "1.5만원대", "2만원대"],
+  "2만원 이상": ["2.5만원대", "3만원대", "4만원 이상"],
+};
+
+/** 화면 상황 필터 → DB stores.categories(jsonb) 실제 저장 태그 값 */
+const SITUATION_ALIAS: Record<string, string[]> = {
+  혼밥: ["혼밥", "혼자먹기", "혼술", "혼카페", "혼자카페", "혼자방문", "혼자할일"],
+  데이트: ["데이트", "데이트하기좋은", "소개팅장소", "소개팅", "데이트코스", "연애인맛집"],
+  친구모임: ["친구모임", "술모임", "회식", "모임", "단체모임", "가족외식", "회식장소", "2차", "차모임"],
 };
 
 /**
@@ -72,13 +79,14 @@ export async function GET(request: NextRequest) {
       conditions.push(or(...priceConditions)!);
     }
     if (situation && situation !== "전체") {
-      const situationJson = JSON.stringify([situation]);
-      // purpose_tags 또는 feature_tags에 포함된 행
+      const situationAliases = SITUATION_ALIAS[situation] ?? [situation];
+      // 상황 태그는 stores.categories(jsonb 배열)에 저장됨. ?| = jsonb 배열이 text[] 중 하나라도 포함하면 true
+      // 각 요소를 개별 바인드 파라미터로 전달해 SQL 인젝션을 방지
       conditions.push(
-        or(
-          sql`${storeTable.purposeTags} @> ${situationJson}::jsonb`,
-          sql`${storeTable.featureTags} @> ${situationJson}::jsonb`
-        )!
+        sql`${storeTable.categories} ?| array[${sql.join(
+          situationAliases.map((t) => sql`${t}`),
+          sql`, `,
+        )}]::text[]`,
       );
     }
 

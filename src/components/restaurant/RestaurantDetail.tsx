@@ -175,9 +175,18 @@ export function RestaurantDetail({ rid }: { rid: string }) {
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 {restaurant.name}
               </h1>
-              <span className="inline-block px-3 py-1 bg-orange-50 text-orange-700 text-sm rounded-full">
-                {restaurant.category}
-              </span>
+              {restaurant.category
+                .split(",")
+                .map((tag) => tag.trim())
+                .filter(Boolean)
+                .map((tag, index) => (
+                  <span
+                    key={`${tag}-${index}`}
+                    className="inline-block px-3 py-1 bg-orange-50 text-orange-700 text-sm rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
             </div>
           </div>
 

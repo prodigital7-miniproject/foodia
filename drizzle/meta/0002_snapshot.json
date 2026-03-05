@@ -1,6 +1,6 @@
 {
-  "id": "d46a82ba-2de0-4375-afc0-76e47cb2731a",
-  "prevId": "d2d2c7a1-6c5d-48d5-949f-f117b1902b99",
+  "id": "4c3c427f-ad9c-4626-8a53-075689fdc643",
+  "prevId": "2d9843cf-7fdf-4f43-9bbf-dd8f5d0ea2d8",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -19,6 +19,19 @@
           "type": "varchar(30)",
           "primaryKey": false,
           "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "img_url": {
+          "name": "img_url",
+          "type": "varchar(3000)",
+          "primaryKey": false,
+          "notNull": false
+
         }
       },
       "indexes": {
@@ -33,9 +46,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+
         },
         "foods_unique_name": {
           "name": "foods_unique_name",
@@ -48,9 +61,10 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
+
         }
       },
       "foreignKeys": {},
@@ -84,7 +98,7 @@
         },
         "img_url": {
           "name": "img_url",
-          "type": "varchar(255)",
+          "type": "varchar(3000)",
           "primaryKey": false,
           "notNull": false
         },
@@ -127,9 +141,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "reviews_idx_nickname": {
           "name": "reviews_idx_nickname",
@@ -142,25 +156,25 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "reviews_rid_stores_rid_fk": {
           "name": "reviews_rid_stores_rid_fk",
           "tableFrom": "reviews",
+          "tableTo": "stores",
+          "schemaTo": "foodia",
           "columnsFrom": [
             "rid"
           ],
-          "tableTo": "stores",
-          "schemaTo": "foodia",
           "columnsTo": [
             "rid"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -216,9 +230,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "store_foods_idx_rid": {
           "name": "store_foods_idx_rid",
@@ -231,9 +245,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "store_foods_unique_rid_food": {
           "name": "store_foods_unique_rid_food",
@@ -252,39 +266,39 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "store_foods_food_id_foods_id_fk": {
           "name": "store_foods_food_id_foods_id_fk",
           "tableFrom": "store_foods",
+          "tableTo": "foods",
+          "schemaTo": "foodia",
           "columnsFrom": [
             "food_id"
           ],
-          "tableTo": "foods",
-          "schemaTo": "foodia",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "store_foods_rid_stores_rid_fk": {
           "name": "store_foods_rid_stores_rid_fk",
           "tableFrom": "store_foods",
+          "tableTo": "stores",
+          "schemaTo": "foodia",
           "columnsFrom": [
             "rid"
           ],
-          "tableTo": "stores",
-          "schemaTo": "foodia",
           "columnsTo": [
             "rid"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -389,7 +403,7 @@
         },
         "img_url": {
           "name": "img_url",
-          "type": "varchar(255)",
+          "type": "varchar(3000)",
           "primaryKey": false,
           "notNull": false
         },
@@ -463,9 +477,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "stores_idx_name": {
           "name": "stores_idx_name",
@@ -478,9 +492,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "stores_idx_diningcode_score": {
           "name": "stores_idx_diningcode_score",
@@ -493,9 +507,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -547,9 +561,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "together_participants_idx_user_id": {
           "name": "together_participants_idx_user_id",
@@ -562,9 +576,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "together_participants_unique_post_user": {
           "name": "together_participants_unique_post_user",
@@ -583,25 +597,25 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "together_participants_together_post_id_together_posts_id_fk": {
           "name": "together_participants_together_post_id_together_posts_id_fk",
           "tableFrom": "together_participants",
+          "tableTo": "together_posts",
+          "schemaTo": "foodia",
           "columnsFrom": [
             "together_post_id"
           ],
-          "tableTo": "together_posts",
-          "schemaTo": "foodia",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -679,9 +693,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "together_posts_idx_status": {
           "name": "together_posts_idx_status",
@@ -694,25 +708,25 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "together_posts_rid_stores_rid_fk": {
           "name": "together_posts_rid_stores_rid_fk",
           "tableFrom": "together_posts",
+          "tableTo": "stores",
+          "schemaTo": "foodia",
           "columnsFrom": [
             "rid"
           ],
-          "tableTo": "stores",
-          "schemaTo": "foodia",
           "columnsTo": [
             "rid"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -729,10 +743,10 @@
   },
   "enums": {},
   "schemas": {},
-  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},
