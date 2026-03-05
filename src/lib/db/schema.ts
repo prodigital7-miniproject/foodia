@@ -56,6 +56,9 @@ export const storeTable = appSchema.table(
     lat: doublePrecision("lat"),
     lng: doublePrecision("lng"),
 
+    foodPriceRange: varchar("food_price_range", { length: 30 }),
+    cuisineType: varchar("cuisine_type", { length: 30 }),
+
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "date",
@@ -92,38 +95,6 @@ export const foodTable = appSchema.table(
   (table: Parameters<Parameters<typeof appSchema.table>[2]>[0]) => [
     index("foods_idx_name").on(table.name),
     uniqueIndex("foods_unique_name").on(table.name),
-  ],
-);
-
-/**
- * tags
- * 태그 사전 테이블
- * type:
- * - category
- * - purpose
- * - feature
- */
-export const tagTable = appSchema.table(
-  "tags",
-  {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    name: varchar("name", { length: 50 }).notNull(),
-    type: varchar("type", { length: 20 }).notNull(),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "date",
-    })
-      .notNull()
-      .defaultNow(),
-  },
-  (table: Parameters<Parameters<typeof appSchema.table>[2]>[0]) => [
-    check(
-      "tags_type_check",
-      sql`${table.type} IN ('category', 'purpose', 'feature')`,
-    ),
-    index("tags_idx_name").on(table.name),
-    index("tags_idx_type").on(table.type),
-    uniqueIndex("tags_unique_name_type").on(table.name, table.type),
   ],
 );
 
@@ -190,34 +161,6 @@ export const storeFoodTable = appSchema.table(
     index("store_foods_idx_food_id").on(table.foodId),
     index("store_foods_idx_rid").on(table.rid),
     uniqueIndex("store_foods_unique_rid_food").on(table.rid, table.foodId),
-  ],
-);
-
-/**
- * store_tags
- * 태그(tag) - 식당(store) 연결 테이블
- */
-export const storeTagTable = appSchema.table(
-  "store_tags",
-  {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    tagId: bigint("tag_id", { mode: "number" })
-      .notNull()
-      .references(() => tagTable.id, { onDelete: "cascade" }),
-    rid: varchar("rid", { length: 255 })
-      .notNull()
-      .references(() => storeTable.rid, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "date",
-    })
-      .notNull()
-      .defaultNow(),
-  },
-  (table: Parameters<Parameters<typeof appSchema.table>[2]>[0]) => [
-    index("store_tags_idx_tag_id").on(table.tagId),
-    index("store_tags_idx_rid").on(table.rid),
-    uniqueIndex("store_tags_unique_rid_tag").on(table.rid, table.tagId),
   ],
 );
 
@@ -302,7 +245,6 @@ export const storeRelations = relations(
   ({ many }: RelationHelpers) => ({
     reviews: many(reviewTable),
     storeFoods: many(storeFoodTable),
-    storeTags: many(storeTagTable),
     togetherPosts: many(togetherPostTable),
   }),
 );
@@ -311,13 +253,6 @@ export const foodRelations = relations(
   foodTable,
   ({ many }: RelationHelpers) => ({
     storeFoods: many(storeFoodTable),
-  }),
-);
-
-export const tagRelations = relations(
-  tagTable,
-  ({ many }: RelationHelpers) => ({
-    storeTags: many(storeTagTable),
   }),
 );
 
@@ -340,20 +275,6 @@ export const storeFoodRelations = relations(
     }),
     store: one(storeTable, {
       fields: [storeFoodTable.rid],
-      references: [storeTable.rid],
-    }),
-  }),
-);
-
-export const storeTagRelations = relations(
-  storeTagTable,
-  ({ one }: RelationHelpers) => ({
-    tag: one(tagTable, {
-      fields: [storeTagTable.tagId],
-      references: [tagTable.id],
-    }),
-    store: one(storeTable, {
-      fields: [storeTagTable.rid],
       references: [storeTable.rid],
     }),
   }),

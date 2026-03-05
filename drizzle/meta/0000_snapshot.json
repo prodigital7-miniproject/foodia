@@ -1,5 +1,5 @@
 {
-  "id": "50c37371-8888-4286-a1a9-3433244b4a0d",
+  "id": "d2d2c7a1-6c5d-48d5-949f-f117b1902b99",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -417,6 +417,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "food_price_range": {
+          "name": "food_price_range",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cuisine_type": {
+          "name": "cuisine_type",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -491,220 +503,6 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "foodia.store_tags": {
-      "name": "store_tags",
-      "schema": "foodia",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigserial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "tag_id": {
-          "name": "tag_id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rid": {
-          "name": "rid",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "store_tags_idx_tag_id": {
-          "name": "store_tags_idx_tag_id",
-          "columns": [
-            {
-              "expression": "tag_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "store_tags_idx_rid": {
-          "name": "store_tags_idx_rid",
-          "columns": [
-            {
-              "expression": "rid",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "store_tags_unique_rid_tag": {
-          "name": "store_tags_unique_rid_tag",
-          "columns": [
-            {
-              "expression": "rid",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "tag_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "store_tags_tag_id_tags_id_fk": {
-          "name": "store_tags_tag_id_tags_id_fk",
-          "tableFrom": "store_tags",
-          "tableTo": "tags",
-          "schemaTo": "foodia",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "store_tags_rid_stores_rid_fk": {
-          "name": "store_tags_rid_stores_rid_fk",
-          "tableFrom": "store_tags",
-          "tableTo": "stores",
-          "schemaTo": "foodia",
-          "columnsFrom": [
-            "rid"
-          ],
-          "columnsTo": [
-            "rid"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "foodia.tags": {
-      "name": "tags",
-      "schema": "foodia",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigserial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "tags_idx_name": {
-          "name": "tags_idx_name",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "tags_idx_type": {
-          "name": "tags_idx_type",
-          "columns": [
-            {
-              "expression": "type",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "tags_unique_name_type": {
-          "name": "tags_unique_name_type",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "type",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "tags_type_check": {
-          "name": "tags_type_check",
-          "value": "\"foodia\".\"tags\".\"type\" IN ('category', 'purpose', 'feature')"
-        }
-      },
       "isRLSEnabled": false
     },
     "foodia.together_participants": {
