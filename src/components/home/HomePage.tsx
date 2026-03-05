@@ -85,7 +85,7 @@ export function HomePage() {
         {/* 같이먹기 모집 공고 */}
 
         {/* <TogetherList /> */}
-        <TogetherSlider />
+        <TogetherSlider limit={100} />
       </div>
 
       <BottomNav />

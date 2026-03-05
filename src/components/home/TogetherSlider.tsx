@@ -18,7 +18,12 @@ type TogetherPostItem = {
   storeCategory: string | null;
 };
 
-export default function TogetherSlider() {
+type TogetherSliderProps = {
+  /** 요청할 게시글 개수 (API 최대 100). 미지정 시 20. 전체 목록은 100. */
+  limit?: number;
+};
+
+export default function TogetherSlider({ limit = 20 }: TogetherSliderProps) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -31,7 +36,7 @@ export default function TogetherSlider() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/together-posts?limit=20');
+        const response = await fetch(`/api/together-posts?limit=${limit}`);
         const json = await response.json();
         if (!response.ok) {
           setError(json?.error?.message ?? '목록을 불러오지 못했습니다.');
@@ -47,7 +52,7 @@ export default function TogetherSlider() {
       }
     };
     fetchData();
-  }, []);
+  }, [limit]);
 
   const moveScroll = useCallback((direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
@@ -116,6 +121,8 @@ export default function TogetherSlider() {
           <p className="text-sm text-gray-500 py-4">불러오는 중...</p>
         ) : error ? (
           <p className="text-sm text-red-500 py-4">{error}</p>
+        ) : posts.length === 0 ? (
+          <p className="text-sm text-gray-500 py-4">게시물이 없습니다.</p>
         ) : (
           posts.map((post) => (
             <TogetherCard
