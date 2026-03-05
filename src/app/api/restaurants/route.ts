@@ -131,13 +131,18 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // 4) 정렬
+    // 4) 정렬 (거리 미존재는 뒤로)
+    const parseDistance = (d: string | number | undefined): number => {
+      if (d == null || d === "") return Infinity;
+      const n = parseInt(String(d), 10);
+      return Number.isNaN(n) ? Infinity : n;
+    };
     if (sort === "rating") {
       restaurants.sort((a, b) => b.rating - a.rating);
     } else {
       restaurants.sort((a, b) => {
-        const da = parseInt(String(a.distance), 10) || 0;
-        const db = parseInt(String(b.distance), 10) || 0;
+        const da = parseDistance(a.distance);
+        const db = parseDistance(b.distance);
         return da - db;
       });
     }

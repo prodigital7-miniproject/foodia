@@ -34,6 +34,9 @@ export function SearchResults() {
   const situationTags: SituationTag[] = ["전체", "혼밥", "데이트", "친구모임"];
 
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
     const params = new URLSearchParams();
     if (selectedCategory && selectedCategory !== "전체") params.set("category", selectedCategory);
     if (selectedPrice && selectedPrice !== "전체") params.set("priceRange", selectedPrice);
@@ -42,9 +45,10 @@ export function SearchResults() {
 
     setLoading(true);
     setError(null);
-    fetch(`/api/restaurants?${params.toString()}`)
+    fetch(`/api/restaurants?${params.toString()}`, { signal })
       .then((res) => res.json())
       .then((json) => {
+        if (signal.aborted) return;
         if (json.success && Array.isArray(json.data)) {
           setRestaurants(json.data);
         } else {
@@ -52,11 +56,16 @@ export function SearchResults() {
           setError(json.error?.message ?? "목록을 불러오지 못했습니다.");
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        if (err.name === "AbortError") return;
         setRestaurants([]);
         setError("목록을 불러오지 못했습니다.");
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
   }, [selectedCategory, selectedPrice, selectedSituation, sortBy]);
 
   const filteredRestaurants = useMemo(
