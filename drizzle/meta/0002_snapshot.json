@@ -31,6 +31,7 @@
           "type": "varchar(3000)",
           "primaryKey": false,
           "notNull": false
+
         }
       },
       "indexes": {
@@ -47,7 +48,7 @@
           "isUnique": false,
           "concurrently": false,
           "method": "btree",
-          "with": {}
+
         },
         "foods_unique_name": {
           "name": "foods_unique_name",
@@ -63,6 +64,7 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+
         }
       },
       "foreignKeys": {},

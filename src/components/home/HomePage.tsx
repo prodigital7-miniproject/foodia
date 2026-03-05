@@ -84,10 +84,26 @@ export function HomePage() {
 
         {/* 같이먹기 모집 공고 */}
 
-        {/* <TogetherList /> */}
         <TogetherSlider limit={100} />
+
       </div>
 
+      <button
+  onClick={() => router.push("/idel-cup")}
+  className="fixed bottom-24 right-2 md:right-6 z-50 flex items-center gap-2 px-5 py-3 
+             active:scale-95 transition-transform"
+>
+  {/* 말풍선 */}
+  <div className="absolute -top-10 -left-5 whitespace-nowrap bg-orange-50 text-orange-400 text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
+    오늘 뭐 먹지?
+    <div className="absolute right-3 -bottom-1.5 w-3 h-3 bg-orange-50 rotate-45" />
+  </div>
+  
+  <img
+    src="/idel-cup.svg"
+    className="w-24 h-auto drop-shadow-lg"
+  />
+</button>
       <BottomNav />
     </div>
   );
