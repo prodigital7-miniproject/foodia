@@ -19,14 +19,14 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const googlePlaceId = searchParams.get("googlePlaceId")?.trim();
-  if (!googlePlaceId) {
-    return response.fail("googlePlaceId는 필수 쿼리 파라미터입니다.", 400);
+  const rid = searchParams.get("rid")?.trim();
+  if (!rid) {
+    return response.fail("rid는 필수 쿼리 파라미터입니다.", 400);
   }
   const result = await db
     .select()
     .from(reviewTable)
-    .where(eq(reviewTable.googlePlaceId, googlePlaceId))
+    .where(eq(reviewTable.rid, rid))
     .orderBy(desc(reviewTable.createdAt));
   if (result.length === 0) {
     return response.fail("리뷰가 없습니다.", 404);
