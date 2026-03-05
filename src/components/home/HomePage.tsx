@@ -84,10 +84,18 @@ export function HomePage() {
         </div>
 
         {/* 같이먹기 모집 공고 */}
-
-        {/* <TogetherList /> */}
         <TogetherSlider />
       </div>
+
+      <button 
+        onClick={() => router.push('/idel-cup')}
+        className="fixed bottom-24 right-6 z-50 flex items-center gap-2 px-5 py-3 
+                   bg-white border-2 border-amber-900 text-amber-900 rounded-full 
+                   shadow-xl font-bold active:scale-95 transition-transform"
+      >
+        <span className="text-xl">🏆</span>
+        <span>음식 월드컵</span>
+      </button>
 
       <BottomNav />
     </div>
