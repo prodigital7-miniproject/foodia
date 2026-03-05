@@ -11,6 +11,8 @@ import {
   Bookmark,
   MessageCircle,
   Users,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Review, Store } from "@/lib/types";
@@ -37,6 +39,7 @@ export function RestaurantDetail({ rid }: { rid: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [togetherPosts, setTogetherPosts] = useState<TogetherPostItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [menuExpanded, setMenuExpanded] = useState(false);
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -247,14 +250,42 @@ export function RestaurantDetail({ rid }: { rid: string }) {
           <h2 className="font-semibold text-gray-900 mb-4">대표 메뉴</h2>
           <div className="space-y-3">
             {(restaurant.menu ?? []).length > 0 ? (
-              restaurant.menu!.map((item, index) => (
-                <div key={index} className="flex justify-between items-center">
-                  <span className="text-gray-700">{item.name}</span>
-                  <span className="font-medium text-gray-900">
-                    {item.price ?? "-"}
-                  </span>
-                </div>
-              ))
+              <>
+                {(menuExpanded
+                  ? restaurant.menu!
+                  : restaurant.menu!.slice(0, 3)
+                ).map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center"
+                  >
+                    <span className="text-gray-700">{item.name}</span>
+                    <span className="font-medium text-gray-900">
+                      {item.price ?? "-"}
+                    </span>
+                  </div>
+                ))}
+                {(restaurant.menu ?? []).length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setMenuExpanded((prev) => !prev)}
+                    className="w-full py-2 flex items-center justify-center gap-1 text-sm text-orange-600 font-medium hover:text-orange-700"
+                  >
+                    {menuExpanded ? (
+                      <>
+                        <ChevronUp size={16} />
+                        접기
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={16} />
+                        메뉴 더보기 (
+                        {(restaurant.menu ?? []).length - 3}개)
+                      </>
+                    )}
+                  </button>
+                )}
+              </>
             ) : (
               <p className="text-sm text-gray-500">메뉴 정보가 없습니다.</p>
             )}
