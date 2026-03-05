@@ -11,31 +11,31 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const limitParam = searchParams.get("limit");
   const limit = Math.min(Math.max(Number(limitParam) || 20, 1), 100);
-  const googlePlaceId = searchParams.get("googlePlaceId")?.trim();
+  const rid = searchParams.get("rid")?.trim();
 
   const base = db
     .select({
       id: togetherPostTable.id,
-      googlePlaceId: togetherPostTable.googlePlaceId,
+      rid: togetherPostTable.rid,
       title: togetherPostTable.title,
       content: togetherPostTable.content,
       status: togetherPostTable.status,
       isAnonymous: togetherPostTable.isAnonymous,
       createdAt: togetherPostTable.createdAt,
       storeName: storeTable.name,
-      storeCategory: storeTable.category,
+      storeCategory: storeTable.cuisineType,
     })
     .from(togetherPostTable)
     .innerJoin(
       storeTable,
-      eq(togetherPostTable.googlePlaceId, storeTable.googlePlaceId)
+      eq(togetherPostTable.rid, storeTable.rid)
     );
 
-  const rows = googlePlaceId
+  const rows = rid
     ? await base
         .where(
           and(
-            eq(togetherPostTable.googlePlaceId, googlePlaceId),
+            eq(togetherPostTable.rid, rid),
             eq(storeTable.isDeleted, false)
           )
         )

@@ -15,10 +15,12 @@ export function TogetherCard({ store, date, category, content, participant, onCl
         className="flex-shrink-0 w-[160px] h-[200px] flex flex-col items-start gap-2 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-orange-500 transition-all text-left"
       >
         {/* 상단 타이틀 및 카테고리 태그 */}
-        <div className="flex flex-col gap-1 w-full">
-          <div className="flex justify-between items-start w-full">
-            <span className="text-[13px] font-bold text-gray-800 truncate">{store}</span>
-            <span className="bg-orange-100 text-orange-600 text-[9px] px-1.5 py-0.5 rounded">
+        <div className="flex flex-col gap-1 w-full min-w-0">
+          <div className="flex justify-between items-center gap-2 w-full min-w-0">
+            <span className="text-[12px] font-bold text-gray-800 truncate min-w-0">
+              {store}
+            </span>
+            <span className="flex-shrink-0 bg-orange-100 text-orange-600 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap">
               {category}
             </span>
           </div>

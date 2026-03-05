@@ -8,7 +8,7 @@ import { TogetherCard } from './TogetherCard';
 /** GET /api/together-posts 응답 한 건 타입 */
 type TogetherPostItem = {
   id: number;
-  googlePlaceId: string;
+  rid: string;
   title: string;
   content: string;
   status: string;
