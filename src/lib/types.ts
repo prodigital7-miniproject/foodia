@@ -45,7 +45,7 @@ export interface TogetherPost {
   openChatLink?: string;
 }
 
-type Store = {
+export type Store = {
   rid: string;
 
   name: string;
@@ -85,7 +85,7 @@ type Store = {
   isDeleted: boolean;
 };
 
-type Review = {
+export type Review = {
   id: number;
   rid: string;
   nickname: string;

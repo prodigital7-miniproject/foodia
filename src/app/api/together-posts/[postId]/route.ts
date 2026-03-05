@@ -8,7 +8,7 @@ import {
   togetherParticipantTable,
 } from "@/lib/db/schema";
 
-/** GET /api/together-posts/[postId] - 단건 조회 (식당 정보 + 참여자 수) */
+/** GET /api/together-posts/[postId] - 단건 조회 (식당 정보 + 참여자 수/참여자 목록) */
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ postId: string }> }
@@ -59,6 +59,16 @@ export async function GET(
 
   const participantCount = participantCountResult?.count ?? 0;
 
+  const participantsRows = await db
+    .select({
+      userId: togetherParticipantTable.userId,
+    })
+    .from(togetherParticipantTable)
+    .where(eq(togetherParticipantTable.togetherPostId, id))
+    .orderBy(togetherParticipantTable.joinedAt);
+
+  const participants = participantsRows.map((p) => p.userId);
+
   const [postCountResult] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(togetherPostTable)
@@ -78,6 +88,7 @@ export async function GET(
       storeAddress: row.storeAddress ?? "",
       participantCount,
       postCountAtStore,
+      participants,
     },
     { status: 200 }
   );
