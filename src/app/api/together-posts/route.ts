@@ -1,10 +1,11 @@
 import { NextRequest } from "next/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import response from "@/lib/http/response";
 import {
   togetherPostTable,
   storeTable,
+  togetherParticipantTable,
 } from "@/lib/db/schema";
 import { createTogetherPostSchema } from "@/lib/validators/together-post/together-post";
 
@@ -101,5 +102,42 @@ export async function GET(request: NextRequest) {
         .orderBy(desc(togetherPostTable.createdAt))
         .limit(limit);
 
-  return response.ok(rows, { status: 200 });
+  const ids = rows.map((row) => row.id);
+
+  if (ids.length === 0) {
+    return response.ok(
+      rows.map((row) => ({
+        ...row,
+        participantCount: 0,
+        participants: [] as string[],
+      })),
+      { status: 200 },
+    );
+  }
+
+  const participantRows = await db
+    .select({
+      togetherPostId: togetherParticipantTable.togetherPostId,
+      userId: togetherParticipantTable.userId,
+    })
+    .from(togetherParticipantTable)
+    .where(inArray(togetherParticipantTable.togetherPostId, ids));
+
+  const participantsMap = new Map<number, string[]>();
+  for (const row of participantRows) {
+    const list = participantsMap.get(row.togetherPostId) ?? [];
+    list.push(row.userId);
+    participantsMap.set(row.togetherPostId, list);
+  }
+
+  const dataWithParticipants = rows.map((row) => {
+    const participants = participantsMap.get(row.id) ?? [];
+    return {
+      ...row,
+      participantCount: participants.length,
+      participants,
+    };
+  });
+
+  return response.ok(dataWithParticipants, { status: 200 });
 }

@@ -14,8 +14,10 @@ type TogetherPostItem = {
   status: string;
   isAnonymous: boolean;
   createdAt: string;
+  maxParticipants: number;
   storeName: string | null;
   storeCategory: string | null;
+  participantCount: number;
 };
 
 type TogetherSliderProps = {
@@ -131,8 +133,8 @@ export default function TogetherSlider({ limit = 20 }: TogetherSliderProps) {
               date={format(new Date(post.createdAt), 'yyyy-MM-dd')}
               category={post.storeCategory ?? '-'}
               content={post.content}
-              participant="0"
-              onClick={() => router.push(`/together/post/${post.id}`)}
+              participant={`${post.participantCount}명 / ${post.maxParticipants}명`}
+              onClick={() => router.push(`/together/${encodeURIComponent(post.rid)}`)}
             />
           ))
         )}
