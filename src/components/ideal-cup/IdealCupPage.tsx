@@ -69,6 +69,8 @@ export default function FoodWorldCup() {
   const [winner, setWinner] = useState<any>(null);
   const [animating, setAnimating] = useState(false);
   const [selectedSide, setSelectedSide] = useState<number | null>(null);
+  const [stores, setStores] = useState<any[]>([]);
+  const [storesLoading, setStoresLoading] = useState(false);
 
   // DB 데이터
   const [foods, setFoods] = useState<Record<string, any[]>>({});
@@ -83,18 +85,32 @@ export default function FoodWorldCup() {
     fetch("/api/ideal-cup")
       .then((r) => r.json())
       .then((res: { success: boolean; data: DBFood[] }) => {
-        setFoods(mapDBtoFoods(res.data)); 
+        setFoods(mapDBtoFoods(res.data));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!winner?.id) return;
+    setStoresLoading(true);
+    fetch(`/api/ideal-cup/result?foodId=${winner.id}`)
+      .then((r) => r.json())
+      .then((res: { success: boolean; data: any[] }) => {
+        setStores(res.data);
+      })
+      .catch(console.error)
+      .finally(() => setStoresLoading(false));
+  }, [winner]);
 
   // 무작위 셔플
   const shuffle = (arr: any[]) => [...arr].sort(() => Math.random() - 0.5);
 
   // 게임 시작: 데이터 수에 따라 8강/4강/결승 자동 결정
   const startGame = (catId: string) => {
-    const allFoods = foods[catId] || [];
+    const allFoods =
+      catId === "기타" ? Object.values(foods).flat() : foods[catId] || [];
+
     const bracketSize = getBracketSize(allFoods.length);
 
     if (bracketSize === 0) {
@@ -197,7 +213,10 @@ export default function FoodWorldCup() {
                   </div>
 
                   {CATEGORIES.slice(4, 8).map((cat, idx) => {
-                    const count = (foods[cat.id] || []).length;
+                    const count =
+                      cat.id === "기타"
+                        ? Object.values(foods).flat().length
+                        : (foods[cat.id] || []).length;
                     const size = getBracketSize(count);
                     return (
                       <CategoryCard
@@ -311,6 +330,46 @@ export default function FoodWorldCup() {
                   className="w-48 h-48 sm:w-56 sm:h-56 relative z-10 drop-shadow-[0_20px_60px_rgba(255,107,53,0.5)]"
                   alt="winner"
                 />
+              </div>
+
+              {/* 식당 추천 */}
+              <div className="w-full mt-10 z-10">
+                <div className="text-[#ff6b35] text-[10px] font-bold tracking-[4px] uppercase mb-3 text-center">
+                  🍽️ Nearby Restaurants
+                </div>
+                {storesLoading ? (
+                  <div className="text-white/30 text-xs text-center animate-pulse">
+                    식당 찾는 중...
+                  </div>
+                ) : stores.length === 0 ? (
+                  <div className="text-white/20 text-xs text-center">
+                    등록된 식당이 없습니다
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {stores.map((store, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => router.push(`/restaurant/${store.rid}`)}
+                        className="flex items-center gap-3 bg-[#1c1c1c] border border-white/5 rounded-2xl px-4 py-3"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-[#ff6b35]/20 flex items-center justify-center text-[#ff6b35] font-black text-sm flex-shrink-0">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <div className="text-sm font-bold text-white">
+                            {store.name}
+                          </div>
+                          {store.address && (
+                            <div className="text-[10px] text-white/30 mt-0.5">
+                              {store.address}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4 mt-16">

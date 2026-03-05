@@ -42,6 +42,7 @@ export function mapDBtoFoods(dbFoods: DBFood[]): Record<string, any[]> {
   return dbFoods.reduce((acc, food) => {
     if (!acc[food.category]) acc[food.category] = [];
     acc[food.category].push({
+      id:   food.id, 
       name: food.name,
       cat:  food.category,
       icon: food.imgUrl ?? DEFAULT_CATEGORY_ICON[food.category] ?? 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14/assets/svg/1f372.svg',
