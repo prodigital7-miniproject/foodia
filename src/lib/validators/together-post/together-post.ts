@@ -30,3 +30,15 @@ export const createTogetherPostSchema = z.object({
 });
 
 export type CreateTogetherPostSchema = z.infer<typeof createTogetherPostSchema>;
+
+/** 같이먹기 모집글 참여 시 닉네임(실명) 입력 검증 */
+export const participateTogetherPostSchema = z.object({
+  nickname: z
+    .string()
+    .min(1, "닉네임을 입력해 주세요.")
+    .max(10, "닉네임은 10자 이하여야 합니다."),
+});
+
+export type ParticipateTogetherPostSchema = z.infer<
+  typeof participateTogetherPostSchema
+>;

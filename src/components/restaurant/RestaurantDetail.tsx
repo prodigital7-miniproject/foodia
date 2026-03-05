@@ -13,29 +13,25 @@ import {
   Users,
 } from "lucide-react";
 import { BottomNav } from "@/components/layout/BottomNav";
-import { Review, Store } from "@/lib/types";
+import { Store } from "@/lib/types";
 
-/** GET /api/together-posts?rid=... 응답 한 건 */
-type TogetherPostItem = {
+type StoreReview = {
   id: number;
   rid: string;
-  title: string;
+  nickname: string;
+  imgUrl: string | null;
+  rating: number;
   content: string;
-  status: string;
-  isAnonymous: boolean;
   createdAt: string;
-  authorName?: string;
-  maxParticipants?: number;
-  storeName: string | null;
-  storeCategory: string | null;
+  updatedAt: string;
 };
 
 export function RestaurantDetail({ rid }: { rid: string }) {
   const router = useRouter();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [restaurant, setRestaurant] = useState<Store | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [togetherPosts, setTogetherPosts] = useState<TogetherPostItem[]>([]);
+  const [reviews, setReviews] = useState<StoreReview[]>([]);
+  const [togetherPostCount, setTogetherPostCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -93,23 +89,25 @@ export function RestaurantDetail({ rid }: { rid: string }) {
   }, [rid]);
 
   useEffect(() => {
-    const fetchTogetherPosts = async () => {
+    const fetchTogetherPostCount = async () => {
       try {
         const res = await fetch(
-          `/api/together-posts?rid=${encodeURIComponent(rid)}&limit=10`,
-          { method: "GET", cache: "no-store" }
+          `/api/together-posts?rid=${encodeURIComponent(rid)}&limit=100`,
+          { method: "GET", cache: "no-store" },
         );
         if (!res.ok) {
-          setTogetherPosts([]);
+          setTogetherPostCount(0);
           return;
         }
         const json = await res.json();
-        setTogetherPosts(Array.isArray(json.data) ? json.data : []);
+        const data = Array.isArray(json.data) ? json.data : [];
+        // API가 전체 개수는 주지 않으므로 현재는 배열 길이를 사용
+        setTogetherPostCount(data.length);
       } catch {
-        setTogetherPosts([]);
+        setTogetherPostCount(0);
       }
     };
-    if (rid) fetchTogetherPosts();
+    if (rid) fetchTogetherPostCount();
   }, [rid]);
 
   const averageRating = useMemo(() => {
@@ -252,47 +250,31 @@ export function RestaurantDetail({ rid }: { rid: string }) {
           </div>
         </div>
 
-        {/* Together Posts Preview */}
-        {togetherPosts.length > 0 && (
-          <div className="bg-white px-4 py-6 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Users size={20} className="text-orange-600" />
-                <h2 className="font-semibold text-gray-900">
-                  같이먹기 모집 ({togetherPosts.length})
-                </h2>
+        {/* Together Posts Summary & Link */}
+        <div className="bg-white px-4 py-4 border-b border-gray-200">
+          <button
+            type="button"
+            onClick={() => router.push(`/together/${encodeURIComponent(restaurant.rid)}`)}
+            className="w-full flex items-center justify-between px-3 py-3 rounded-xl border border-orange-100 bg-orange-50 hover:bg-orange-100 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Users size={20} className="text-orange-600" />
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-semibold text-gray-900 cursor-pointer">
+                  같이먹기 모집
+                </span>
+                <span className="text-xs text-gray-600">
+                  {togetherPostCount > 0
+                    ? `${togetherPostCount}개의 모집글이 있어요`
+                    : "아직 모집글이 없습니다. 첫 번째 모집글을 작성해보세요!"}
+                </span>
               </div>
             </div>
-            <div className="space-y-3">
-              {togetherPosts.map((post) => (
-                <div
-                  key={post.id}
-                  className="p-3 bg-orange-50 rounded-lg border border-orange-100"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="text-xs font-medium text-orange-700">
-                      {post.isAnonymous ? "익명" : post.authorName ?? "익명"}
-                    </span>
-                    <span className="text-xs text-orange-600">
-                      {new Date(post.createdAt).toLocaleDateString("ko-KR")}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-700 mb-2">{post.content}</p>
-                  <div className="flex items-center gap-2">
-                    {post.storeCategory && (
-                      <span className="px-2 py-0.5 bg-white text-xs text-orange-700 rounded-full">
-                        {post.storeCategory}
-                      </span>
-                    )}
-                    <span className="text-xs text-gray-600">
-                      {post.maxParticipants ?? 0}명 모집
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+            <span className="text-xs font-medium text-orange-600 cursor-pointer">
+              전체 보기
+            </span>
+          </button>
+        </div>
 
         <div className="bg-white px-4 py-6">
           <div className="flex items-center justify-between mb-4">
