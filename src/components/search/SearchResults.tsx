@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowLeft, SlidersHorizontal } from "lucide-react";
 import { SearchBar } from "@/components/search/SearchBar";
 import { FilterChips } from "@/components/search/FilterChips";
 import { RestaurantCard } from "@/components/restaurant/RestaurantCard";
 import { BottomNav } from "@/components/layout/BottomNav";
-import { mockRestaurants } from "@/lib/data/mockData";
-import { FoodCategory, PriceRange, SituationTag, SortOption } from "@/lib/types";
+import type { Restaurant, FoodCategory, PriceRange, SituationTag, SortOption } from "@/lib/types";
 
 export function SearchResults() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const locationParam = searchParams.get("location") || "성수역";
   const categoryParam = searchParams.get("category");
 
@@ -26,37 +25,57 @@ export function SearchResults() {
   const [sortBy, setSortBy] = useState<SortOption>("distance");
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
 
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const foodCategories: FoodCategory[] = ["전체", "한식", "중식", "일식", "양식", "카페"];
   const priceRanges: PriceRange[] = ["전체", "1만원 이하", "1-2만원", "2만원 이상"];
   const situationTags: SituationTag[] = ["전체", "혼밥", "데이트", "친구모임"];
 
-  const filteredRestaurants = useMemo(() => {
-    let result = mockRestaurants.map(r => ({
-      ...r,
-      isBookmarked: bookmarkedIds.has(r.id)
-    }));
+  useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
 
-    if (selectedCategory !== "전체") {
-      result = result.filter(r => r.category === selectedCategory);
-    }
+    const params = new URLSearchParams();
+    if (selectedCategory && selectedCategory !== "전체") params.set("category", selectedCategory);
+    if (selectedPrice && selectedPrice !== "전체") params.set("priceRange", selectedPrice);
+    if (selectedSituation && selectedSituation !== "전체") params.set("situation", selectedSituation);
+    params.set("sort", sortBy);
 
-    if (selectedPrice !== "전체") {
-      result = result.filter(r => r.priceRange === selectedPrice);
-    }
+    setLoading(true);
+    setError(null);
+    fetch(`/api/restaurants?${params.toString()}`, { signal })
+      .then((res) => res.json())
+      .then((json) => {
+        if (signal.aborted) return;
+        if (json.success && Array.isArray(json.data)) {
+          setRestaurants(json.data);
+        } else {
+          setRestaurants([]);
+          setError(json.error?.message ?? "목록을 불러오지 못했습니다.");
+        }
+      })
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setRestaurants([]);
+        setError("목록을 불러오지 못했습니다.");
+      })
+      .finally(() => {
+        if (!signal.aborted) setLoading(false);
+      });
 
-    if (selectedSituation !== "전체") {
-      result = result.filter(r => r.tags.includes(selectedSituation));
-    }
+    return () => controller.abort();
+  }, [selectedCategory, selectedPrice, selectedSituation, sortBy]);
 
-    // Sort
-    if (sortBy === "rating") {
-      result.sort((a, b) => b.rating - a.rating);
-    } else {
-      result.sort((a, b) => parseInt(a.distance) - parseInt(b.distance));
-    }
-
-    return result;
-  }, [selectedCategory, selectedPrice, selectedSituation, sortBy, bookmarkedIds]);
+  const filteredRestaurants = useMemo(
+    () =>
+      restaurants.map((r) => ({
+        ...r,
+        isBookmarked: bookmarkedIds.has(r.id),
+      })),
+    [restaurants, bookmarkedIds]
+  );
 
   const handleBookmark = (id: string) => {
     setBookmarkedIds(prev => {
@@ -157,7 +176,13 @@ export function SearchResults() {
 
         {/* Results */}
         <div className="space-y-4">
-          {filteredRestaurants.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-12 text-gray-500">로딩 중...</div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-2">{error}</p>
+            </div>
+          ) : filteredRestaurants.length > 0 ? (
             filteredRestaurants.map((restaurant) => (
               <RestaurantCard
                 key={restaurant.id}
