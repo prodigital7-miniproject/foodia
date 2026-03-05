@@ -1,5 +1,5 @@
 {
-  "id": "9b92dde6-4513-4e33-87b4-bcc0e71d2b6d",
+  "id": "50c37371-8888-4286-a1a9-3433244b4a0d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -70,8 +70,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "google_place_id": {
-          "name": "google_place_id",
+        "rid": {
+          "name": "rid",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
@@ -116,11 +116,11 @@
         }
       },
       "indexes": {
-        "reviews_idx_google_place_id": {
-          "name": "reviews_idx_google_place_id",
+        "reviews_idx_rid": {
+          "name": "reviews_idx_rid",
           "columns": [
             {
-              "expression": "google_place_id",
+              "expression": "rid",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -148,16 +148,16 @@
         }
       },
       "foreignKeys": {
-        "reviews_google_place_id_stores_google_place_id_fk": {
-          "name": "reviews_google_place_id_stores_google_place_id_fk",
+        "reviews_rid_stores_rid_fk": {
+          "name": "reviews_rid_stores_rid_fk",
           "tableFrom": "reviews",
           "tableTo": "stores",
           "schemaTo": "foodia",
           "columnsFrom": [
-            "google_place_id"
+            "rid"
           ],
           "columnsTo": [
-            "google_place_id"
+            "rid"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -190,8 +190,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "google_place_id": {
-          "name": "google_place_id",
+        "rid": {
+          "name": "rid",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
@@ -220,11 +220,11 @@
           "method": "btree",
           "with": {}
         },
-        "store_foods_idx_google_place_id": {
-          "name": "store_foods_idx_google_place_id",
+        "store_foods_idx_rid": {
+          "name": "store_foods_idx_rid",
           "columns": [
             {
-              "expression": "google_place_id",
+              "expression": "rid",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -235,11 +235,11 @@
           "method": "btree",
           "with": {}
         },
-        "store_foods_unique_google_place_food": {
-          "name": "store_foods_unique_google_place_food",
+        "store_foods_unique_rid_food": {
+          "name": "store_foods_unique_rid_food",
           "columns": [
             {
-              "expression": "google_place_id",
+              "expression": "rid",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -272,16 +272,16 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "store_foods_google_place_id_stores_google_place_id_fk": {
-          "name": "store_foods_google_place_id_stores_google_place_id_fk",
+        "store_foods_rid_stores_rid_fk": {
+          "name": "store_foods_rid_stores_rid_fk",
           "tableFrom": "store_foods",
           "tableTo": "stores",
           "schemaTo": "foodia",
           "columnsFrom": [
-            "google_place_id"
+            "rid"
           ],
           "columnsTo": [
-            "google_place_id"
+            "rid"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -297,8 +297,8 @@
       "name": "stores",
       "schema": "foodia",
       "columns": {
-        "google_place_id": {
-          "name": "google_place_id",
+        "rid": {
+          "name": "rid",
           "type": "varchar(255)",
           "primaryKey": true,
           "notNull": true
@@ -311,7 +311,7 @@
         },
         "category": {
           "name": "category",
-          "type": "varchar(50)",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },
@@ -320,6 +320,60 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "categories": {
+          "name": "categories",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "diningcode_score": {
+          "name": "diningcode_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address_jibun": {
+          "name": "address_jibun",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hours_summary": {
+          "name": "hours_summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hours_detail": {
+          "name": "hours_detail",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "purpose_tags": {
+          "name": "purpose_tags",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "feature_tags": {
+          "name": "feature_tags",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu": {
+          "name": "menu",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "distance": {
           "name": "distance",
@@ -342,6 +396,24 @@
         "description": {
           "name": "description",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "distance_m": {
+          "name": "distance_m",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lat": {
+          "name": "lat",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lng": {
+          "name": "lng",
+          "type": "double precision",
           "primaryKey": false,
           "notNull": false
         },
@@ -397,6 +469,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "stores_idx_diningcode_score": {
+          "name": "stores_idx_diningcode_score",
+          "columns": [
+            {
+              "expression": "diningcode_score",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -404,6 +491,220 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "foodia.store_tags": {
+      "name": "store_tags",
+      "schema": "foodia",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tag_id": {
+          "name": "tag_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rid": {
+          "name": "rid",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "store_tags_idx_tag_id": {
+          "name": "store_tags_idx_tag_id",
+          "columns": [
+            {
+              "expression": "tag_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "store_tags_idx_rid": {
+          "name": "store_tags_idx_rid",
+          "columns": [
+            {
+              "expression": "rid",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "store_tags_unique_rid_tag": {
+          "name": "store_tags_unique_rid_tag",
+          "columns": [
+            {
+              "expression": "rid",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "tag_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "store_tags_tag_id_tags_id_fk": {
+          "name": "store_tags_tag_id_tags_id_fk",
+          "tableFrom": "store_tags",
+          "tableTo": "tags",
+          "schemaTo": "foodia",
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "store_tags_rid_stores_rid_fk": {
+          "name": "store_tags_rid_stores_rid_fk",
+          "tableFrom": "store_tags",
+          "tableTo": "stores",
+          "schemaTo": "foodia",
+          "columnsFrom": [
+            "rid"
+          ],
+          "columnsTo": [
+            "rid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "foodia.tags": {
+      "name": "tags",
+      "schema": "foodia",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "tags_idx_name": {
+          "name": "tags_idx_name",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tags_idx_type": {
+          "name": "tags_idx_type",
+          "columns": [
+            {
+              "expression": "type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tags_unique_name_type": {
+          "name": "tags_unique_name_type",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "tags_type_check": {
+          "name": "tags_type_check",
+          "value": "\"foodia\".\"tags\".\"type\" IN ('category', 'purpose', 'feature')"
+        }
+      },
       "isRLSEnabled": false
     },
     "foodia.together_participants": {
@@ -521,8 +822,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "google_place_id": {
-          "name": "google_place_id",
+        "rid": {
+          "name": "rid",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
@@ -569,11 +870,11 @@
         }
       },
       "indexes": {
-        "together_posts_idx_google_place_id": {
-          "name": "together_posts_idx_google_place_id",
+        "together_posts_idx_rid": {
+          "name": "together_posts_idx_rid",
           "columns": [
             {
-              "expression": "google_place_id",
+              "expression": "rid",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -601,16 +902,16 @@
         }
       },
       "foreignKeys": {
-        "together_posts_google_place_id_stores_google_place_id_fk": {
-          "name": "together_posts_google_place_id_stores_google_place_id_fk",
+        "together_posts_rid_stores_rid_fk": {
+          "name": "together_posts_rid_stores_rid_fk",
           "tableFrom": "together_posts",
           "tableTo": "stores",
           "schemaTo": "foodia",
           "columnsFrom": [
-            "google_place_id"
+            "rid"
           ],
           "columnsTo": [
-            "google_place_id"
+            "rid"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
