@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 export const createStoreSchema = z.object({
-  googlePlaceId: z
+  rid: z
     .string()
-    .min(1, "Google Place ID를 입력하여 주세요.")
-    .max(255, "Google Place ID는 255자 이하여야 합니다."),
+    .min(1, "가게의 rid를 입력하여 주세요.")
+    .max(255, "rid는 255자 이하여야 합니다."),
   name: z
     .string()
     .min(1, "가게 이름을 입력하여 주세요.")
