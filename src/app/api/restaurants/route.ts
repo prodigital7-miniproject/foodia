@@ -24,7 +24,7 @@ const PRICE_RANGE_ALIAS: Record<string, string[]> = {
   "2만원 이상": ["2.5만원대", "3만원대", "4만원 이상"],
 };
 
-/** 화면 상황 필터 → DB purpose_tags / feature_tags 실제 저장값 */
+/** 화면 상황 필터 → DB stores.categories(jsonb) 실제 저장 태그 값 */
 const SITUATION_ALIAS: Record<string, string[]> = {
   혼밥: ["혼밥", "혼자먹기", "혼술", "혼카페", "혼자카페", "혼자방문", "혼자할일"],
   데이트: ["데이트", "데이트하기좋은", "소개팅장소", "소개팅", "데이트코스", "연애인맛집"],
@@ -81,8 +81,13 @@ export async function GET(request: NextRequest) {
     if (situation && situation !== "전체") {
       const situationAliases = SITUATION_ALIAS[situation] ?? [situation];
       // 상황 태그는 stores.categories(jsonb 배열)에 저장됨. ?| = jsonb 배열이 text[] 중 하나라도 포함하면 true
-      const escaped = situationAliases.map((t) => `'${String(t).replace(/'/g, "''")}'`).join(",");
-      conditions.push(sql`${storeTable.categories} ?| array[${sql.raw(escaped)}]::text[]`);
+      // 각 요소를 개별 바인드 파라미터로 전달해 SQL 인젝션을 방지
+      conditions.push(
+        sql`${storeTable.categories} ?| array[${sql.join(
+          situationAliases.map((t) => sql`${t}`),
+          sql`, `,
+        )}]::text[]`,
+      );
     }
 
     const query = db
