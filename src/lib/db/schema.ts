@@ -91,6 +91,8 @@ export const foodTable = appSchema.table(
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: varchar("name", { length: 30 }).notNull(),
+    category: varchar("category", { length: 30 }),
+    imgUrl: varchar("img_url", { length: 3000 }),
   },
   (table: Parameters<Parameters<typeof appSchema.table>[2]>[0]) => [
     index("foods_idx_name").on(table.name),
