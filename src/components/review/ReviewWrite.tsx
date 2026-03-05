@@ -55,10 +55,6 @@ export function ReviewWrite({ rid }: { rid: string }) {
     if (rid) fetchStore();
   }, [rid]);
 
-  if (!restaurant) {
-    return null;
-  }
-
   const handleSubmit = async () => {
     if (rating === 0) {
       alert("별점을 선택해주세요");
@@ -68,9 +64,9 @@ export function ReviewWrite({ rid }: { rid: string }) {
       alert("리뷰 내용을 입력해주세요");
       return;
     }
-
+    const normalizedNickname = nickname.trim() || "익명";
     try {
-      await fetch("/api/review", {
+      const res = await fetch("/api/review", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,15 +76,17 @@ export function ReviewWrite({ rid }: { rid: string }) {
           rating,
           content,
           img_url,
-          nickname,
+          nickname: normalizedNickname,
         }),
       });
+      if (!res.ok) {
+        throw new Error(`리뷰 등록 실패: ${res.status}`);
+      }
       alert("리뷰가 등록되었습니다!");
+      router.push(`/restaurant/${rid}`);
     } catch (error) {
       console.error("리뷰 등록 실패:", error);
       alert("리뷰 등록에 실패했습니다.");
-    } finally {
-      router.push(`/restaurant/${rid}`);
     }
   };
 
@@ -96,6 +94,13 @@ export function ReviewWrite({ rid }: { rid: string }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-500">불러오는 중...</p>
+      </div>
+    );
+  }
+  if (!restaurant) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">가게 정보를 불러올 수 없습니다.</p>
       </div>
     );
   }
