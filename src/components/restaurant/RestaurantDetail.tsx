@@ -106,7 +106,8 @@ export function RestaurantDetail({ rid }: { rid: string }) {
       </div>
     );
   }
-
+  console.log(restaurant);
+  console.log("img: ", restaurant.imgUrl);
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header Image */}
