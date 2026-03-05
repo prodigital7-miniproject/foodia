@@ -48,7 +48,7 @@ export const storeTable = appSchema.table(
     // 기존 컬럼
     distance: integer("distance"),
     priceRange: varchar("price_range", { length: 20 }),
-    imgUrl: varchar("img_url", { length: 255 }),
+    imgUrl: varchar("img_url", { length: 3000 }),
     description: text("description"),
 
     // 크롤링 원본
@@ -109,7 +109,7 @@ export const reviewTable = appSchema.table(
       .notNull()
       .references(() => storeTable.rid, { onDelete: "cascade" }),
     nickname: varchar("nickname", { length: 50 }).notNull(),
-    imgUrl: varchar("img_url", { length: 255 }),
+    imgUrl: varchar("img_url", { length: 3000 }),
     rating: integer("rating").notNull(),
     content: varchar("content", { length: 255 }).notNull(),
     createdAt: timestamp("created_at", {

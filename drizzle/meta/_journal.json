@@ -8,6 +8,13 @@
       "when": 1772681736992,
       "tag": "0000_broad_squadron_supreme",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772690558842,
+      "tag": "0001_fantastic_speedball",
+      "breakpoints": true
     }
   ]
 }
