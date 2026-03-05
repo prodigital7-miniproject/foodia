@@ -48,7 +48,7 @@ export const storeTable = appSchema.table(
     // 기존 컬럼
     distance: integer("distance"),
     priceRange: varchar("price_range", { length: 20 }),
-    imgUrl: varchar("img_url", { length: 255 }),
+    imgUrl: varchar("img_url", { length: 3000 }),
     description: text("description"),
 
     // 크롤링 원본
@@ -109,7 +109,7 @@ export const reviewTable = appSchema.table(
       .notNull()
       .references(() => storeTable.rid, { onDelete: "cascade" }),
     nickname: varchar("nickname", { length: 50 }).notNull(),
-    imgUrl: varchar("img_url", { length: 255 }),
+    imgUrl: varchar("img_url", { length: 3000 }),
     rating: integer("rating").notNull(),
     content: varchar("content", { length: 255 }).notNull(),
     createdAt: timestamp("created_at", {
@@ -176,6 +176,10 @@ export const togetherPostTable = appSchema.table(
       .references(() => storeTable.rid, { onDelete: "cascade" }),
     title: varchar("title", { length: 100 }).notNull(),
     content: varchar("content", { length: 300 }).notNull(),
+    /** 작성자 실명 (로그인 없이 입력) */
+    authorName: varchar("author_name", { length: 50 }).notNull(),
+    /** 모집 인원 수 (1 이상) */
+    maxParticipants: integer("max_participants").notNull(),
     status: varchar("status", { length: 20 }).notNull().default("open"),
     isAnonymous: boolean("is_anonymous").notNull().default(false),
     createdAt: timestamp("created_at", {
@@ -196,6 +200,10 @@ export const togetherPostTable = appSchema.table(
     check(
       "together_posts_status_check",
       sql`${table.status} IN ('open', 'closed')`,
+    ),
+    check(
+      "together_posts_max_participants_check",
+      sql`${table.maxParticipants} >= 1`,
     ),
     index("together_posts_idx_rid").on(table.rid),
     index("together_posts_idx_status").on(table.status),

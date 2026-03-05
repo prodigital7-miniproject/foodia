@@ -6,6 +6,59 @@ import {
   togetherPostTable,
   storeTable,
 } from "@/lib/db/schema";
+import { createTogetherPostSchema } from "@/lib/validators/together-post/together-post";
+
+/** POST /api/together-posts - 같이먹기 모집글 작성 (실명, 본문, 모집 인원) */
+export async function POST(request: NextRequest) {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return response.fail("요청 본문이 올바른 JSON이 아닙니다.", 400);
+  }
+
+  const result = createTogetherPostSchema.safeParse(body);
+  if (!result.success) {
+    const first = result.error.flatten().fieldErrors;
+    const message =
+      typeof first === "object" && first !== null && Object.keys(first).length > 0
+        ? Object.values(first)
+            .flat()
+            .filter(Boolean)[0] ?? "입력값을 확인해 주세요."
+        : "입력값을 확인해 주세요.";
+    return response.fail(String(message), 400);
+  }
+
+  const { rid, content, authorName, maxParticipants } = result.data;
+  const title =
+    result.data.title?.trim() ||
+    content.slice(0, 100);
+
+  const [storeExists] = await db
+    .select({ rid: storeTable.rid })
+    .from(storeTable)
+    .where(and(eq(storeTable.rid, rid), eq(storeTable.isDeleted, false)))
+    .limit(1);
+
+  if (!storeExists) {
+    return response.fail("해당 식당을 찾을 수 없거나 삭제된 식당입니다.", 404);
+  }
+
+  const [inserted] = await db
+    .insert(togetherPostTable)
+    .values({
+      rid,
+      title,
+      content,
+      authorName,
+      maxParticipants,
+      status: "open",
+      isAnonymous: false,
+    })
+    .returning();
+
+  return response.ok(inserted, { status: 201 });
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -22,6 +75,8 @@ export async function GET(request: NextRequest) {
       status: togetherPostTable.status,
       isAnonymous: togetherPostTable.isAnonymous,
       createdAt: togetherPostTable.createdAt,
+      authorName: togetherPostTable.authorName,
+      maxParticipants: togetherPostTable.maxParticipants,
       storeName: storeTable.name,
       storeCategory: storeTable.cuisineType,
     })

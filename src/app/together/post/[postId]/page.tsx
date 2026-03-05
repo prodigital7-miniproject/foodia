@@ -2,8 +2,10 @@
 
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { TogetherPostDetail } from "@/components/together/TogetherPostDetail";
-import type { TogetherPostDetailData } from "@/components/together/TogetherPostDetail";
+import {
+  TogetherPostDetail,
+  type TogetherPostDetailData,
+} from "@/components/together/post/[postId]/TogetherPostDetail";
 
 export default function TogetherPostPage() {
   const params = useParams();
