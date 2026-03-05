@@ -7,7 +7,6 @@ import { SearchBar } from "@/components/search/SearchBar";
 import { CategoryButton } from "@/components/home/CategoryButton";
 import { BottomNav } from "@/components/layout/BottomNav";
 import Image from "next/image";
-import TogetherList from "./TogetherList";
 import { Header } from "../layout/Header";
 import TogetherSlider from "./TogetherSlider";
 
