@@ -12,18 +12,31 @@ import {
   MessageCircle,
   Users,
 } from "lucide-react";
-import { mockTogetherPosts } from "@/lib/data/mockData";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Review, Store } from "@/lib/types";
+
+/** GET /api/together-posts?rid=... 응답 한 건 */
+type TogetherPostItem = {
+  id: number;
+  rid: string;
+  title: string;
+  content: string;
+  status: string;
+  isAnonymous: boolean;
+  createdAt: string;
+  authorName?: string;
+  maxParticipants?: number;
+  storeName: string | null;
+  storeCategory: string | null;
+};
 
 export function RestaurantDetail({ rid }: { rid: string }) {
   const router = useRouter();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [restaurant, setRestaurant] = useState<Store | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [togetherPosts, setTogetherPosts] = useState<TogetherPostItem[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const togetherPosts = mockTogetherPosts.filter((p) => p.restaurantId === rid);
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -77,6 +90,26 @@ export function RestaurantDetail({ rid }: { rid: string }) {
     if (rid) {
       fetchReviews();
     }
+  }, [rid]);
+
+  useEffect(() => {
+    const fetchTogetherPosts = async () => {
+      try {
+        const res = await fetch(
+          `/api/together-posts?rid=${encodeURIComponent(rid)}&limit=10`,
+          { method: "GET", cache: "no-store" }
+        );
+        if (!res.ok) {
+          setTogetherPosts([]);
+          return;
+        }
+        const json = await res.json();
+        setTogetherPosts(Array.isArray(json.data) ? json.data : []);
+      } catch {
+        setTogetherPosts([]);
+      }
+    };
+    if (rid) fetchTogetherPosts();
   }, [rid]);
 
   const averageRating = useMemo(() => {
@@ -225,36 +258,34 @@ export function RestaurantDetail({ rid }: { rid: string }) {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Users size={20} className="text-orange-600" />
-                <h2 className="font-semibold text-gray-900">같이먹기 모집</h2>
+                <h2 className="font-semibold text-gray-900">
+                  같이먹기 모집 ({togetherPosts.length})
+                </h2>
               </div>
-              <Link
-                href={`/together/${restaurant.rid}`}
-                className="text-sm text-orange-600 font-medium"
-              >
-                전체보기
-              </Link>
             </div>
             <div className="space-y-3">
-              {togetherPosts.slice(0, 2).map((post) => (
+              {togetherPosts.map((post) => (
                 <div
                   key={post.id}
                   className="p-3 bg-orange-50 rounded-lg border border-orange-100"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <span className="text-xs font-medium text-orange-700">
-                      {post.author}
+                      {post.isAnonymous ? "익명" : post.authorName ?? "익명"}
                     </span>
                     <span className="text-xs text-orange-600">
-                      {post.timeTag}
+                      {new Date(post.createdAt).toLocaleDateString("ko-KR")}
                     </span>
                   </div>
                   <p className="text-sm text-gray-700 mb-2">{post.content}</p>
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 bg-white text-xs text-orange-700 rounded-full">
-                      {post.situationTag}
-                    </span>
+                    {post.storeCategory && (
+                      <span className="px-2 py-0.5 bg-white text-xs text-orange-700 rounded-full">
+                        {post.storeCategory}
+                      </span>
+                    )}
                     <span className="text-xs text-gray-600">
-                      {post.peopleCount}명 모집
+                      {post.maxParticipants ?? 0}명 모집
                     </span>
                   </div>
                 </div>
@@ -318,11 +349,11 @@ export function RestaurantDetail({ rid }: { rid: string }) {
       <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
         <div className="max-w-md mx-auto flex gap-3">
           <Link
-            href={`/together/${restaurant.rid}`}
+            href={`/together/write/${restaurant.rid}`}
             className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-full font-medium flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
           >
             <MessageCircle size={18} />
-            같이먹기
+            같이먹기 모집
           </Link>
           <Link
             href={`/review/write/${restaurant.rid}`}
