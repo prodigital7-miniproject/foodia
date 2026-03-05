@@ -7,7 +7,7 @@ export interface Restaurant {
   imageUrl: string;
   rating: number;
   reviewCount: number;
-  distance?: number;
+  distance?: number | string;
   priceRange: string;
   tags: string[];
   address: string;
@@ -44,6 +44,57 @@ export interface TogetherPost {
   date: string;
   openChatLink?: string;
 }
+
+type Store = {
+  rid: string;
+
+  name: string;
+  category: string;
+  address: string;
+
+  categories: string[] | null;
+  diningcodeScore: number | null;
+  addressJibun: string | null;
+  phone: string | null;
+  hoursSummary: string | null;
+  hoursDetail: unknown[] | null;
+  purposeTags: string[] | null;
+  featureTags: string[] | null;
+  menu:
+    | {
+        name: string;
+        price: string;
+        rank: string;
+        order_pct: string;
+      }[]
+    | null;
+
+  distance: number | null;
+  priceRange: string | null;
+  imgUrl: string | null;
+  description: string | null;
+
+  distanceM: number | null;
+  lat: number | null;
+  lng: number | null;
+  foodPriceRange: string | null;
+  cuisineType: string | null;
+
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  isDeleted: boolean;
+};
+
+type Review = {
+  id: number;
+  rid: string;
+  nickname: string;
+  imgUrl: string | null;
+  rating: number;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type FoodCategory = "전체" | "한식" | "중식" | "일식" | "양식" | "카페";
 export type PriceRange = "전체" | "1만원 이하" | "1-2만원" | "2만원 이상";
