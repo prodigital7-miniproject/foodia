@@ -2,21 +2,57 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { format } from 'date-fns';
 import { TogetherCard } from './TogetherCard';
 
-export default function TogetherSlider() {
+/** GET /api/together-posts 응답 한 건 타입 */
+type TogetherPostItem = {
+  id: number;
+  rid: string;
+  title: string;
+  content: string;
+  status: string;
+  isAnonymous: boolean;
+  createdAt: string;
+  storeName: string | null;
+  storeCategory: string | null;
+};
+
+type TogetherSliderProps = {
+  /** 요청할 게시글 개수 (API 최대 100). 미지정 시 20. 전체 목록은 100. */
+  limit?: number;
+};
+
+export default function TogetherSlider({ limit = 20 }: TogetherSliderProps) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [posts, setPosts] = useState<TogetherPostItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const allData = [
-    { id: "1", store: "아도르 성수", date: "2026-02-27", category: "카페", content: "카페에서 공부하실 분 있나요? 조용히 각자 할 일 해요!", participant: "2" },
-    { id: "2", store: "맛든", date: "2026-02-27", category: "한식", content: "성수동 맛집 같이 가실 분? 혼밥 탈출하고 싶어요.", participant: "2" },
-    { id: "3", store: "호랑이 초밥", date: "2026-03-01", category: "일식", content: "역전 앞 초밥집 번개 모임 하실 분 구함!", participant: "4" },
-    { id: "4", store: "그리노", date: "2026-03-02", category: "양식", content: "파스타 새로 생긴 곳 가보실 분 있나요?", participant: "2" },
-    { id: "5", store: "김푸디", date: "2026-03-04", category: "전체", content: "푸디 선정 맛집 탐방대 1기 모집합니다!", participant: "3" },
-  ];
-
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/together-posts?limit=${limit}`);
+        const json = await response.json();
+        if (!response.ok) {
+          setError(json?.error?.message ?? '목록을 불러오지 못했습니다.');
+          setPosts([]);
+          return;
+        }
+        setPosts(Array.isArray(json?.data) ? json.data : []);
+      } catch {
+        setError('목록을 불러오지 못했습니다.');
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [limit]);
 
   const moveScroll = useCallback((direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
@@ -59,18 +95,17 @@ export default function TogetherSlider() {
           <h2 className="text-lg font-bold text-gray-900 mb-1">같이먹기 모집 공고</h2>
           <p className="text-xs text-gray-500 font-medium mb-5">근처에서 함께 식사할 메이트를 찾아보세요</p>
         </div>
-        <span className="text-orange-500 font-bold text-sm mb-5">총 {allData.length}개</span>
+        <span className="text-orange-500 font-bold text-sm mb-5">총 {posts.length}개</span>
       </div>
 
-  
-      <button 
+      <button
         onClick={() => moveScroll('left')}
         className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/90 rounded-full shadow-lg text-gray-400 hover:text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block"
       >
         <span className="text-xl">〈</span>
       </button>
 
-      <button 
+      <button
         onClick={() => moveScroll('right')}
         className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/90 rounded-full shadow-lg text-gray-400 hover:text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block"
       >
@@ -78,21 +113,29 @@ export default function TogetherSlider() {
       </button>
 
       {/* 가로 스크롤 영역 */}
-      <div 
+      <div
         ref={scrollRef}
         className="flex gap-4 overflow-x-auto px-5 pb-4 scrollbar-hide scroll-smooth"
       >
-        {allData.map((data) => (
-          <TogetherCard
-            key={data.id}
-            store={data.store}
-            date={data.date}
-            category={data.category}
-            content={data.content}
-            participant={data.participant}
-            onClick={() => router.push(`/together/${data.id}`)}
-          />
-        ))}
+        {loading ? (
+          <p className="text-sm text-gray-500 py-4">불러오는 중...</p>
+        ) : error ? (
+          <p className="text-sm text-red-500 py-4">{error}</p>
+        ) : posts.length === 0 ? (
+          <p className="text-sm text-gray-500 py-4">게시물이 없습니다.</p>
+        ) : (
+          posts.map((post) => (
+            <TogetherCard
+              key={post.id}
+              store={post.storeName ?? '-'}
+              date={format(new Date(post.createdAt), 'yyyy-MM-dd')}
+              category={post.storeCategory ?? '-'}
+              content={post.content}
+              participant="0"
+              onClick={() => router.push(`/together/post/${post.id}`)}
+            />
+          ))
+        )}
       </div>
     </div>
   );
