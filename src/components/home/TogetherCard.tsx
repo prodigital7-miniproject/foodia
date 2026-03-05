@@ -12,7 +12,7 @@ export function TogetherCard({ store, date, category, content, participant, onCl
     return (
       <button
         onClick={onClick}
-        className="flex-shrink-0 w-[160px] h-[200px] flex flex-col items-start gap-2 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-orange-500 transition-all text-left"
+        className="flex-shrink-0 w-[160px] h-[200px] flex flex-col items-start gap-2 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-orange-500 transition-all text-left cursor-pointer"
       >
         {/* 상단 타이틀 및 카테고리 태그 */}
         <div className="flex flex-col gap-1 w-full min-w-0">
