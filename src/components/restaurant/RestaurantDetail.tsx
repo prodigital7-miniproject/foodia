@@ -46,6 +46,10 @@ export function RestaurantDetail({ rid }: { rid: string }) {
   reviewsLengthRef.current = reviews.length;
 
   useEffect(() => {
+    setMenuExpanded(false);
+  }, [rid]);
+
+  useEffect(() => {
     const fetchStore = async () => {
       try {
         setLoading(true);
