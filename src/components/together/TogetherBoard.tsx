@@ -114,7 +114,7 @@ export function TogetherBoard() {
   };
 
   const handleConfirmParticipate = async () => {
-    if (!activePostId) return;
+    if (activePostId === null) return;
     if (!nickname.trim()) {
       setError("닉네임을 입력해 주세요.");
       return;
@@ -250,7 +250,8 @@ export function TogetherBoard() {
             {posts.map((post) => {
               const hasParticipated = participatedPostIds.has(post.id);
               const isClosed = post.status !== "open";
-              const disabled = hasParticipated || isClosed;
+              const isFull = post.participantCount >= post.maxParticipants;
+              const disabled = hasParticipated || isClosed || isFull;
 
               return (
                 <div
@@ -288,9 +289,9 @@ export function TogetherBoard() {
 
                 {post.participants && post.participants.length > 0 && (
                   <ul className="mt-1 space-y-1">
-                    {post.participants.map((name) => (
+                    {post.participants.map((name, index) => (
                       <li
-                        key={`${post.id}-${name}`}
+                        key={`${post.id}-${name}-${index}`}
                         className="flex items-center gap-2 text-sm text-gray-700"
                       >
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -313,7 +314,11 @@ export function TogetherBoard() {
                     }`}
                   >
                     <span aria-hidden>💬</span>
-                    {hasParticipated ? "참여완료" : "참여하기"}
+                    {hasParticipated
+                      ? "참여완료"
+                      : isFull
+                      ? "정원마감"
+                      : "참여하기"}
                   </button>
                 </div>
               );

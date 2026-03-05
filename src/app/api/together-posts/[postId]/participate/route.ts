@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import response from "@/lib/http/response";
 import {
@@ -7,6 +7,14 @@ import {
   togetherPostTable,
 } from "@/lib/db/schema";
 import { participateTogetherPostSchema } from "@/lib/validators/together-post/together-post";
+
+type TxSuccess = {
+  ok: true;
+  participantId: number;
+  participantCount: number;
+};
+type TxFailure = { ok: false; message: string; status: number };
+type TxResult = TxSuccess | TxFailure;
 
 /** POST /api/together-posts/[postId]/participate - 모집글 참여 (닉네임/실명) */
 export async function POST(
@@ -41,66 +49,81 @@ export async function POST(
 
   const { nickname } = result.data;
 
-  // 모집글 존재 여부 및 상태/정원 조회
-  const [post] = await db
-    .select({
-      id: togetherPostTable.id,
-      status: togetherPostTable.status,
-      maxParticipants: togetherPostTable.maxParticipants,
-    })
-    .from(togetherPostTable)
-    .where(eq(togetherPostTable.id, id));
+  try {
+    const txResult = await db.transaction(async (tx): Promise<TxResult> => {
+      // 1) Lock post row and check status + maxParticipants
+      const [post] = await tx
+        .select({
+          id: togetherPostTable.id,
+          status: togetherPostTable.status,
+          maxParticipants: togetherPostTable.maxParticipants,
+        })
+        .from(togetherPostTable)
+        .where(eq(togetherPostTable.id, id))
+        .for("update");
 
-  if (!post) {
-    return response.fail("게시글을 찾을 수 없습니다.", 404);
-  }
+      if (!post) {
+        return { ok: false, message: "게시글을 찾을 수 없습니다.", status: 404 };
+      }
+      if (post.status !== "open") {
+        return {
+          ok: false,
+          message: "이미 마감된 모집글입니다.",
+          status: 400,
+        };
+      }
 
-  if (post.status !== "open") {
-    return response.fail("이미 마감된 모집글입니다.", 400);
-  }
+      // 2) Re-read current participant count inside same tx and validate capacity
+      const [countRow] = await tx
+        .select({ count: sql<number>`count(*)::int` })
+        .from(togetherParticipantTable)
+        .where(eq(togetherParticipantTable.togetherPostId, id));
 
-  // 현재 참여 인원 수 조회
-  const [countRow] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(togetherParticipantTable)
-    .where(eq(togetherParticipantTable.togetherPostId, id));
+      const currentCount = countRow?.count ?? 0;
+      if (currentCount >= post.maxParticipants) {
+        return {
+          ok: false,
+          message: "모집 인원이 가득 찼습니다.",
+          status: 400,
+        };
+      }
 
-  const currentCount = countRow?.count ?? 0;
+      // 3) Insert and return id (unique constraint together_participants_unique_post_user may throw 23505)
+      const [inserted] = await tx
+        .insert(togetherParticipantTable)
+        .values({
+          togetherPostId: id,
+          userId: nickname,
+        })
+        .returning({ id: togetherParticipantTable.id });
 
-  if (currentCount >= post.maxParticipants) {
-    return response.fail("모집 인원이 가득 찼습니다.", 400);
-  }
-
-  // 동일 닉네임으로 중복 참여 방지
-  const [existing] = await db
-    .select({ id: togetherParticipantTable.id })
-    .from(togetherParticipantTable)
-    .where(
-      and(
-        eq(togetherParticipantTable.togetherPostId, id),
-        eq(togetherParticipantTable.userId, nickname),
-      ),
-    );
-
-  if (existing) {
-    return response.fail("이미 참여한 모집글입니다.", 400);
-  }
-
-  const [inserted] = await db
-    .insert(togetherParticipantTable)
-    .values({
-      togetherPostId: id,
-      userId: nickname,
-    })
-    .returning({
-      id: togetherParticipantTable.id,
+      return {
+        ok: true,
+        participantId: inserted.id,
+        participantCount: currentCount + 1,
+      };
     });
 
-  return response.ok(
-    {
-      participantId: inserted.id,
-      participantCount: currentCount + 1,
-    },
-    { status: 201 },
-  );
+    if (!txResult.ok) {
+      return response.fail(txResult.message, txResult.status);
+    }
+    return response.ok(
+      {
+        participantId: txResult.participantId,
+        participantCount: txResult.participantCount,
+      },
+      { status: 201 },
+    );
+  } catch (err) {
+    const code =
+      (err as { cause?: { code?: string } }).cause?.code ??
+      (err as { code?: string }).code;
+    if (code === "23505") {
+      return response.fail("이미 참여한 모집글입니다.", 400);
+    }
+    if (typeof code === "string") {
+      return response.fail("요청을 처리할 수 없습니다.", 400);
+    }
+    return response.fail("일시적인 오류가 발생했습니다.", 500);
+  }
 }
