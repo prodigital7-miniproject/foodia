@@ -97,7 +97,7 @@ export function RestaurantDetail({ rid }: { rid: string }) {
       try {
         const res = await fetch(
           `/api/together-posts?rid=${encodeURIComponent(rid)}&limit=10`,
-          { method: "GET", cache: "no-store" }
+          { method: "GET", cache: "no-store" },
         );
         if (!res.ok) {
           setTogetherPosts([]);
@@ -177,9 +177,16 @@ export function RestaurantDetail({ rid }: { rid: string }) {
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 {restaurant.name}
               </h1>
-              <span className="inline-block px-3 py-1 bg-orange-50 text-orange-700 text-sm rounded-full">
-                {restaurant.category}
-              </span>
+              {restaurant.category.split(",").map((tag) => {
+                console.log("tag:", tag);
+                return (
+                  <>
+                    <span className="inline-block px-3 py-1 bg-orange-50 text-orange-700 text-sm rounded-full">
+                      {tag.trim()}
+                    </span>
+                  </>
+                );
+              })}
             </div>
           </div>
 
@@ -271,7 +278,7 @@ export function RestaurantDetail({ rid }: { rid: string }) {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <span className="text-xs font-medium text-orange-700">
-                      {post.isAnonymous ? "익명" : post.authorName ?? "익명"}
+                      {post.isAnonymous ? "익명" : (post.authorName ?? "익명")}
                     </span>
                     <span className="text-xs text-orange-600">
                       {new Date(post.createdAt).toLocaleDateString("ko-KR")}
