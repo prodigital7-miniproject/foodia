@@ -8,6 +8,13 @@
       "when": 1772681736992,
       "tag": "0000_broad_squadron_supreme",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772693977767,
+      "tag": "0002_0001_together_posts_author_max_participants",
+      "breakpoints": true
     }
   ]
 }

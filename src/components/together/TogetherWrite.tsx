@@ -1,54 +1,157 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { mockRestaurants } from "@/lib/data/mockData";
 
-const timeTags = ["지금", "오늘 점심", "오늘 저녁", "내일 점심", "내일 저녁"];
-const situationTags = ["혼밥 탈출", "점심메이트", "저녁메이트", "카페", "친구모임"];
+type StoreSummary = {
+  rid: string;
+  name: string;
+  category: string;
+  imgUrl: string | null;
+};
 
 export function TogetherWrite() {
   const params = useParams();
-  const restaurantId = params.restaurantId as string;
+  const restaurantId = params.restaurantId as string | undefined;
   const router = useRouter();
+
+  const [restaurant, setRestaurant] = useState<StoreSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [authorName, setAuthorName] = useState("");
   const [content, setContent] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
-  const [selectedSituation, setSelectedSituation] = useState("");
   const [peopleCount, setPeopleCount] = useState(1);
   const [openChatLink, setOpenChatLink] = useState("");
 
-  const restaurant = mockRestaurants.find((r) => r.id === restaurantId);
+  useEffect(() => {
+    if (!restaurantId) {
+      setLoading(false);
+      setError("잘못된 경로입니다.");
+      return;
+    }
 
-  if (!restaurant) {
-    return null;
-  }
+    const fetchStore = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const handleSubmit = () => {
+        const res = await fetch(`/api/store/${restaurantId}`, {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        const json = await res.json();
+
+        if (!res.ok || !json?.success) {
+          setError(json?.message ?? "식당 정보를 불러오지 못했습니다.");
+          setRestaurant(null);
+          return;
+        }
+
+        const data = json.data as {
+          rid: string;
+          name: string;
+          category: string;
+          imgUrl: string | null;
+        };
+
+        setRestaurant({
+          rid: data.rid,
+          name: data.name,
+          category: data.category,
+          imgUrl: data.imgUrl,
+        });
+      } catch {
+        setError("식당 정보를 불러오지 못했습니다.");
+        setRestaurant(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStore();
+  }, [restaurantId]);
+
+  const handleSubmit = async () => {
+    if (!restaurant) {
+      alert("식당 정보를 불러오지 못했습니다.");
+      return;
+    }
+
+    if (!authorName.trim()) {
+      alert("이름을 입력해주세요.");
+      return;
+    }
+
     if (!content.trim()) {
       alert("모집글 내용을 입력해주세요");
       return;
     }
-    if (!selectedTime) {
-      alert("희망 시간대를 선택해주세요");
-      return;
-    }
-    if (!selectedSituation) {
-      alert("상황 태그를 선택해주세요");
-      return;
-    }
 
-    // Mock submit
-    alert("같이먹기 글이 등록되었습니다!");
-    router.push(`/together/${restaurantId}`);
+    const finalContent = [
+      content.trim(),
+      openChatLink && `[오픈채팅] ${openChatLink}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    try {
+      const res = await fetch("/api/together-posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rid: restaurant.rid,
+          content: finalContent,
+          authorName: authorName.trim(),
+          maxParticipants: peopleCount,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json?.success) {
+        alert(json?.error?.message ?? "모집글 등록에 실패했습니다.");
+        return;
+      }
+
+      alert("같이먹기 글이 등록되었습니다!");
+      router.push(`/restaurant/${restaurant.rid}`);
+    } catch {
+      alert("모집글 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">불러오는 중...</p>
+      </div>
+    );
+  }
+
+  if (error || !restaurant) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <p className="text-red-500 text-center">
+          {error ?? "식당 정보를 찾을 수 없습니다."}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-6">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-full"
+          >
             <ArrowLeft size={20} className="text-gray-700" />
           </button>
           <div>
@@ -63,7 +166,7 @@ export function TogetherWrite() {
         <div className="bg-white rounded-lg p-4 mb-6 border border-gray-200">
           <div className="flex gap-3">
             <img
-              src={restaurant.imageUrl}
+              src={restaurant.imgUrl || "/images/default-restaurant.jpg"}
               alt={restaurant.name}
               className="w-16 h-16 rounded-lg object-cover"
             />
@@ -72,6 +175,19 @@ export function TogetherWrite() {
               <p className="text-sm text-gray-600">{restaurant.category}</p>
             </div>
           </div>
+        </div>
+
+        {/* Author name */}
+        <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200">
+          <h2 className="font-semibold text-gray-900 mb-2">이름</h2>
+          <input
+            type="text"
+            value={authorName}
+            onChange={(e) => setAuthorName(e.target.value)}
+            placeholder="실명을 입력해 주세요"
+            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 placeholder:text-gray-400"
+            maxLength={50}
+          />
         </div>
 
         {/* Content */}
@@ -86,46 +202,6 @@ export function TogetherWrite() {
           />
           <div className="flex justify-end mt-2">
             <span className="text-sm text-gray-500">{content.length}/200</span>
-          </div>
-        </div>
-
-        {/* Time Selection */}
-        <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200">
-          <h2 className="font-semibold text-gray-900 mb-3">희망 시간대</h2>
-          <div className="flex flex-wrap gap-2">
-            {timeTags.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => setSelectedTime(tag)}
-                className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedTime === tag
-                    ? "bg-orange-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Situation Tag */}
-        <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200">
-          <h2 className="font-semibold text-gray-900 mb-3">상황 태그</h2>
-          <div className="flex flex-wrap gap-2">
-            {situationTags.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => setSelectedSituation(tag)}
-                className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedSituation === tag
-                    ? "bg-orange-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
           </div>
         </div>
 
