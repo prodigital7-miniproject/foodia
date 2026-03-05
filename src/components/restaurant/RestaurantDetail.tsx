@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -37,9 +37,17 @@ export function RestaurantDetail({ rid }: { rid: string }) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [restaurant, setRestaurant] = useState<Store | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewVisibleCount, setReviewVisibleCount] = useState(10);
+  const reviewSentinelRef = useRef<HTMLDivElement>(null);
+  const reviewsLengthRef = useRef(0);
   const [togetherPosts, setTogetherPosts] = useState<TogetherPostItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuExpanded, setMenuExpanded] = useState(false);
+
+  const REVIEW_INITIAL_VISIBLE = 10;
+  const REVIEW_LOAD_MORE = 10;
+
+  reviewsLengthRef.current = reviews.length;
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -76,24 +84,39 @@ export function RestaurantDetail({ rid }: { rid: string }) {
           method: "GET",
           cache: "no-store",
         });
-
         if (!res.ok) {
           setReviews([]);
           return;
         }
-
         const json = await res.json();
         setReviews(Array.isArray(json.data) ? json.data : []);
+        setReviewVisibleCount(REVIEW_INITIAL_VISIBLE);
       } catch (error) {
         console.error("리뷰 조회 실패:", error);
         setReviews([]);
       }
     };
-
-    if (rid) {
-      fetchReviews();
-    }
+    if (rid) fetchReviews();
   }, [rid]);
+
+  useLayoutEffect(() => {
+    const sentinel = reviewSentinelRef.current;
+    if (!sentinel || reviews.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) return;
+        const total = reviewsLengthRef.current;
+        setReviewVisibleCount((prev) => {
+          const next = Math.min(prev + REVIEW_LOAD_MORE, total);
+          return next >= total ? total : next;
+        });
+      },
+      { root: null, rootMargin: "400px 0px", threshold: 0 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [reviews.length]);
 
   useEffect(() => {
     const fetchTogetherPosts = async () => {
@@ -349,33 +372,63 @@ export function RestaurantDetail({ rid }: { rid: string }) {
 
           <div className="space-y-4">
             {reviews.length > 0 ? (
-              reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="pb-4 border-b border-gray-100 last:border-0"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-900">
-                      {review.nickname}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Star
-                        size={14}
-                        className="fill-orange-400 text-orange-400"
-                      />
-                      <span className="text-sm text-gray-700">
-                        {review.rating}
+              <>
+                {reviews
+                  .slice(0, reviewVisibleCount)
+                  .map((review) => (
+                    <div
+                      key={review.id}
+                      className="pb-4 border-b border-gray-100 last:border-0"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-900">
+                          {review.nickname}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Star
+                            size={14}
+                            className="fill-orange-400 text-orange-400"
+                          />
+                          <span className="text-sm text-gray-700">
+                            {review.rating}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-gray-700 mb-2">
+                        {review.content}
+                      </p>
+
+                      <span className="text-xs text-gray-400 mt-2 block">
+                        {formatReviewDate(review.createdAt)}
                       </span>
                     </div>
-                  </div>
-
-                  <p className="text-sm text-gray-700 mb-2">{review.content}</p>
-
-                  <span className="text-xs text-gray-400 mt-2 block">
-                    {formatReviewDate(review.createdAt)}
-                  </span>
-                </div>
-              ))
+                  ))}
+                {reviewVisibleCount < reviews.length && (
+                  <>
+                    <div
+                      ref={reviewSentinelRef}
+                      className="min-h-[120px] w-full"
+                      aria-hidden
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReviewVisibleCount((prev) =>
+                          Math.min(
+                            prev + REVIEW_LOAD_MORE,
+                            reviews.length,
+                          ),
+                        )
+                      }
+                      className="w-full py-3 text-sm text-orange-600 font-medium border border-orange-200 rounded-lg hover:bg-orange-50"
+                    >
+                      리뷰 더보기 (
+                      {reviews.length - reviewVisibleCount}개 남음)
+                    </button>
+                  </>
+                )}
+              </>
             ) : (
               <p className="text-sm text-gray-500">
                 아직 작성된 리뷰가 없습니다.
