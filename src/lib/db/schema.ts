@@ -4,8 +4,10 @@ import {
   bigint,
   boolean,
   check,
+  doublePrecision,
   index,
   integer,
+  jsonb,
   pgSchema,
   text,
   timestamp,
@@ -15,26 +17,55 @@ import {
 
 const appSchema = pgSchema("foodia");
 
-/**
- * stores
- */
 export const storeTable = appSchema.table(
   "stores",
   {
-    googlePlaceId: varchar("google_place_id", { length: 255 }).primaryKey(),
+    rid: varchar("rid", { length: 255 }).primaryKey(),
+
+    // 필수값
     name: varchar("name", { length: 100 }).notNull(),
-    category: varchar("category", { length: 50 }).notNull(),
+    category: varchar("category", { length: 255 }).notNull(),
     address: varchar("address", { length: 255 }).notNull(),
+
+    // 원본 보관용
+    categories: jsonb("categories").$type<string[]>(),
+    diningcodeScore: integer("diningcode_score"),
+    addressJibun: varchar("address_jibun", { length: 255 }),
+    phone: varchar("phone", { length: 30 }),
+    hoursSummary: text("hours_summary"),
+    hoursDetail: jsonb("hours_detail").$type<unknown[]>(),
+    purposeTags: jsonb("purpose_tags").$type<string[]>(),
+    featureTags: jsonb("feature_tags").$type<string[]>(),
+    menu: jsonb("menu").$type<
+      {
+        name: string;
+        price: string;
+        rank: string;
+        order_pct: string;
+      }[]
+    >(),
+
+    // 기존 컬럼
     distance: integer("distance"),
     priceRange: varchar("price_range", { length: 20 }),
     imgUrl: varchar("img_url", { length: 255 }),
     description: text("description"),
+
+    // 크롤링 원본
+    distanceM: integer("distance_m"),
+    lat: doublePrecision("lat"),
+    lng: doublePrecision("lng"),
+
+    foodPriceRange: varchar("food_price_range", { length: 30 }),
+    cuisineType: varchar("cuisine_type", { length: 30 }),
+
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "date",
     })
       .notNull()
       .defaultNow(),
+
     updatedAt: timestamp("updated_at", {
       withTimezone: true,
       mode: "date",
@@ -42,11 +73,13 @@ export const storeTable = appSchema.table(
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
+
     isDeleted: boolean("is_deleted").notNull().default(false),
   },
   (table: Parameters<Parameters<typeof appSchema.table>[2]>[0]) => [
     index("stores_idx_category").on(table.category),
     index("stores_idx_name").on(table.name),
+    index("stores_idx_diningcode_score").on(table.diningcodeScore),
   ],
 );
 
@@ -72,9 +105,9 @@ export const reviewTable = appSchema.table(
   "reviews",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    googlePlaceId: varchar("google_place_id", { length: 255 })
+    rid: varchar("rid", { length: 255 })
       .notNull()
-      .references(() => storeTable.googlePlaceId, { onDelete: "cascade" }),
+      .references(() => storeTable.rid, { onDelete: "cascade" }),
     nickname: varchar("nickname", { length: 50 }).notNull(),
     imgUrl: varchar("img_url", { length: 255 }),
     rating: integer("rating").notNull(),
@@ -98,7 +131,7 @@ export const reviewTable = appSchema.table(
       "reviews_rating_check",
       sql`${table.rating} >= 1 AND ${table.rating} <= 5`,
     ),
-    index("reviews_idx_google_place_id").on(table.googlePlaceId),
+    index("reviews_idx_rid").on(table.rid),
     index("reviews_idx_nickname").on(table.nickname),
   ],
 );
@@ -114,9 +147,9 @@ export const storeFoodTable = appSchema.table(
     foodId: bigint("food_id", { mode: "number" })
       .notNull()
       .references(() => foodTable.id, { onDelete: "cascade" }),
-    googlePlaceId: varchar("google_place_id", { length: 255 })
+    rid: varchar("rid", { length: 255 })
       .notNull()
-      .references(() => storeTable.googlePlaceId, { onDelete: "cascade" }),
+      .references(() => storeTable.rid, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "date",
@@ -126,11 +159,8 @@ export const storeFoodTable = appSchema.table(
   },
   (table: Parameters<Parameters<typeof appSchema.table>[2]>[0]) => [
     index("store_foods_idx_food_id").on(table.foodId),
-    index("store_foods_idx_google_place_id").on(table.googlePlaceId),
-    uniqueIndex("store_foods_unique_google_place_food").on(
-      table.googlePlaceId,
-      table.foodId,
-    ),
+    index("store_foods_idx_rid").on(table.rid),
+    uniqueIndex("store_foods_unique_rid_food").on(table.rid, table.foodId),
   ],
 );
 
@@ -141,9 +171,9 @@ export const togetherPostTable = appSchema.table(
   "together_posts",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    googlePlaceId: varchar("google_place_id", { length: 255 })
+    rid: varchar("rid", { length: 255 })
       .notNull()
-      .references(() => storeTable.googlePlaceId, { onDelete: "cascade" }),
+      .references(() => storeTable.rid, { onDelete: "cascade" }),
     title: varchar("title", { length: 100 }).notNull(),
     content: varchar("content", { length: 300 }).notNull(),
     status: varchar("status", { length: 20 }).notNull().default("open"),
@@ -167,7 +197,7 @@ export const togetherPostTable = appSchema.table(
       "together_posts_status_check",
       sql`${table.status} IN ('open', 'closed')`,
     ),
-    index("together_posts_idx_google_place_id").on(table.googlePlaceId),
+    index("together_posts_idx_rid").on(table.rid),
     index("together_posts_idx_status").on(table.status),
   ],
 );
@@ -230,8 +260,8 @@ export const reviewRelations = relations(
   reviewTable,
   ({ one }: RelationHelpers) => ({
     store: one(storeTable, {
-      fields: [reviewTable.googlePlaceId],
-      references: [storeTable.googlePlaceId],
+      fields: [reviewTable.rid],
+      references: [storeTable.rid],
     }),
   }),
 );
@@ -244,8 +274,8 @@ export const storeFoodRelations = relations(
       references: [foodTable.id],
     }),
     store: one(storeTable, {
-      fields: [storeFoodTable.googlePlaceId],
-      references: [storeTable.googlePlaceId],
+      fields: [storeFoodTable.rid],
+      references: [storeTable.rid],
     }),
   }),
 );
@@ -254,8 +284,8 @@ export const togetherPostRelations = relations(
   togetherPostTable,
   ({ one, many }: RelationHelpers) => ({
     store: one(storeTable, {
-      fields: [togetherPostTable.googlePlaceId],
-      references: [storeTable.googlePlaceId],
+      fields: [togetherPostTable.rid],
+      references: [storeTable.rid],
     }),
     participants: many(togetherParticipantTable),
   }),
