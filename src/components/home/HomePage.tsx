@@ -55,7 +55,7 @@ export function HomePage() {
         </section>
 
         {/* ── 검색 섹션 (히어로 아래 별도) ── */}
-        <section className="mt-15 mb-15">
+        <section className="mt-16 mb-16">
        
           <div className="flex items-center gap-2 bg-white border-2 border-orange-400 rounded-2xl px-5 py-3.5 shadow-sm focus-within:ring-2 focus-within:ring-orange-100 transition-all ">
             <Search className="w-5 h-5 text-orange-400 shrink-0" />

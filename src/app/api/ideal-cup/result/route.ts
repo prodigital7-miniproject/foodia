@@ -2,7 +2,7 @@ import { db } from "@/lib/db/client";
 import response from "@/lib/http/response";
 import { NextRequest } from "next/server";
 import { storeFoodTable, storeTable } from "@/lib/db/schema"; // 실제 테이블명으로 변경
-import { eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   const foodId = request.nextUrl.searchParams.get("foodId");
@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
   const stores = await db
     .select()
     .from(storeTable)
-    .where(inArray(storeTable.rid, rids)); 
+    .where(inArray(storeTable.rid, rids))
+    .orderBy(desc(storeTable.diningcodeScore));
 
   return response.ok(stores, { status: 200 });
 }

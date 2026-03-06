@@ -284,11 +284,11 @@ export default function FoodWorldCup() {
                     >
                       <img
                         src={food?.icon}
-                        alt={food.name}
+                        alt={food?.name}
                         className="w-24 h-24 sm:w-32 sm:h-32 drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)] mb-6"
                       />
                       <div className="text-xl sm:text-2xl font-black tracking-tighter text-center uppercase">
-                        {food.name}
+                        {food?.name}
                       </div>
                     </div>
                     {idx === 0 && (
