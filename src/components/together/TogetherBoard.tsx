@@ -270,7 +270,7 @@ export function TogetherBoard() {
                       </span>
                     </div>
                     <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
-                      {isClosed ? "마감" : "모집 중"}
+                      {isClosed ? "마감" : isFull ? "모집 완료" : "모집 중"}
                     </span>
                   </div>
 
