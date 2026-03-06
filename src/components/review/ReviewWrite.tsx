@@ -32,7 +32,7 @@ export function ReviewWrite({ rid }: { rid: string }) {
       try {
         setLoading(true);
 
-        const res = await fetch(`/api/store/${rid}`, {
+        const res = await fetch(`/api/restaurants/${rid}`, {
           method: "GET",
           cache: "no-store",
         });

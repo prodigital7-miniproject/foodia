@@ -37,7 +37,7 @@ export function TogetherWrite() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`/api/store/${restaurantId}`, {
+        const res = await fetch(`/api/restaurants/${restaurantId}`, {
           method: "GET",
           cache: "no-store",
         });

@@ -1,21 +1,23 @@
+import { db } from "@/lib/db/client";
+import { storeTable } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-/**
- * GET /api/restaurants/:id
- * 예: 맛집 상세 조회
- */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  // TODO: DB에서 id로 조회
-  return NextResponse.json({ success: true, data: { id, name: "" } });
-}
+  const store = await db.query.storeTable.findFirst({
+    where: eq(storeTable.rid, id),
+  });
 
-/**
- * PATCH /api/restaurants/:id
- * PUT /api/restaurants/:id
- * DELETE /api/restaurants/:id
- * 등 필요한 메서드도 같은 파일에 export async function 으로 추가하면 됩니다.
- */
+  if (!store) {
+    return NextResponse.json(
+      { success: false, message: "맛집을 찾을 수 없습니다." },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({ success: true, data: store }, { status: 200 });
+}
