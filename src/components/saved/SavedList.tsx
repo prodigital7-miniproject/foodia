@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Bookmark } from "lucide-react";
 import { RestaurantCard } from "@/components/restaurant/RestaurantCard";
-import { BottomNav } from "@/components/layout/BottomNav";
 import { FilterChips } from "@/components/search/FilterChips";
 import { SituationTag } from "@/lib/types";
 import type { Restaurant } from "@/lib/types";
@@ -21,14 +20,6 @@ export function SavedList() {
     return r.tags.includes(selectedSituation);
   });
 
-  const handleBookmark = (id: string) => {
-    setBookmarkedIds((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(id);
-      return newSet;
-    });
-    setSavedRestaurants((prev) => prev.filter((r) => r.id !== id));
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -65,7 +56,6 @@ export function SavedList() {
               <RestaurantCard
                 key={restaurant.id}
                 restaurant={{ ...restaurant, isBookmarked: true }}
-                onBookmark={handleBookmark}
               />
             ))}
           </div>
@@ -79,8 +69,6 @@ export function SavedList() {
           </div>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 }

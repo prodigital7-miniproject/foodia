@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Users, Plus } from "lucide-react";
-import { BottomNav } from "@/components/layout/BottomNav";
 import type { Store } from "@/lib/types";
 
 type TogetherPostItem = {
@@ -408,7 +407,6 @@ export function TogetherBoard() {
         </Link>
       </div>
 
-      <BottomNav />
     </div>
   );
 }

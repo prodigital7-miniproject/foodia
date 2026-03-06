@@ -6,7 +6,6 @@ import { ArrowLeft, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-rea
 import { SearchInputWithSuggestions } from "@/components/search/SearchInputWithSuggestions";
 import { FilterChips } from "@/components/search/FilterChips";
 import { RestaurantCard } from "@/components/restaurant/RestaurantCard";
-import { BottomNav } from "@/components/layout/BottomNav";
 import type { Restaurant, FoodCategory, PriceRange, SituationTag, SortOption } from "@/lib/types";
 
 const CATEGORY_ALIAS: Record<string, string[]> = {
@@ -237,7 +236,6 @@ export function SearchResults() {
         )}
       </div>
 
-      <BottomNav />
     </div>
   );
 }

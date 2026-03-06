@@ -1,7 +1,7 @@
 "use client";
 
 import { User, Star, Bookmark, MessageCircle, Settings } from "lucide-react";
-import { BottomNav } from "@/components/layout/BottomNav";
+
 
 export function ProfilePage() {
   return (
@@ -86,7 +86,6 @@ export function ProfilePage() {
         </div>
       </div>
 
-      <BottomNav />
     </div>
   );
 }
