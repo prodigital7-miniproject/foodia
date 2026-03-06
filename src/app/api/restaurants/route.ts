@@ -3,10 +3,8 @@ import { and, eq, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { storeTable, reviewTable } from "@/lib/db/schema";
 import response from "@/lib/http/response";
+import { mapStoresToRestaurants } from "@/lib/restaurant/map-store-to-restaurant";
 import type { Restaurant } from "@/lib/types";
-
-const DEFAULT_IMAGE =
-  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80";
 
 /** 화면 필터 값 → DB에 저장돼 있을 수 있는 값들 (category 불일치 대응) */
 const CATEGORY_ALIAS: Record<string, string[]> = {
@@ -99,45 +97,7 @@ export async function GET(request: NextRequest) {
     const stores = await query;
 
     // 3) Restaurant 형태로 매핑
-    const restaurants: Restaurant[] = stores.map((s) => {
-      const stats = statsByRid.get(s.rid);
-      const reviewCount = stats?.reviewCount ?? 0;
-      const avgFromReviews = stats?.avgRating ?? 0;
-      const rating =
-        reviewCount > 0
-          ? avgFromReviews
-          : (s.diningcodeScore != null && s.diningcodeScore <= 5
-              ? s.diningcodeScore
-              : s.diningcodeScore != null
-                ? Math.round((s.diningcodeScore / 20) * 10) / 10
-                : 0);
-
-      const tags: string[] = [
-        ...(s.purposeTags ?? []),
-        ...(s.featureTags ?? []),
-      ];
-
-      const menuItems = (s.menu ?? []).map((m) => ({
-        name: m.name,
-        price: m.price,
-      }));
-
-      return {
-        id: s.rid,
-        name: s.name,
-        category: s.category,
-        imageUrl: s.imgUrl ?? DEFAULT_IMAGE,
-        rating: Number(rating),
-        reviewCount,
-        distance: s.distance != null ? `${s.distance}m` : "",
-        priceRange: s.priceRange ?? "",
-        tags,
-        address: s.address,
-        hours: s.hoursSummary ?? "",
-        menuItems,
-        reviews: [],
-      };
-    });
+    const restaurants: Restaurant[] = mapStoresToRestaurants(stores, statsByRid);
 
     // 4) 정렬 (거리 미존재는 뒤로)
     const parseDistance = (d: string | number | undefined): number => {
