@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
-import { mockRestaurants } from "@/lib/data/mockData";
 import { Review, Store } from "@/lib/types";
 
 const reviewTags = [
@@ -32,7 +31,7 @@ export function ReviewWrite({ rid }: { rid: string }) {
       try {
         setLoading(true);
 
-        const res = await fetch(`/api/store/${rid}`, {
+        const res = await fetch(`/api/restaurants/${rid}`, {
           method: "GET",
           cache: "no-store",
         });

@@ -5,27 +5,21 @@ import { Bookmark } from "lucide-react";
 import { RestaurantCard } from "@/components/restaurant/RestaurantCard";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { FilterChips } from "@/components/search/FilterChips";
-import { mockRestaurants } from "@/lib/data/mockData";
 import { SituationTag } from "@/lib/types";
+import type { Restaurant } from "@/lib/types";
 
 export function SavedList() {
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(
-    new Set(["1", "3", "4"]) // Mock bookmarked items
-  );
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [selectedSituation, setSelectedSituation] = useState<SituationTag>("전체");
+  const [savedRestaurants, setSavedRestaurants] = useState<Restaurant[]>([]);
 
   const situationTags: SituationTag[] = ["전체", "혼밥", "데이트", "친구모임"];
 
-  const savedRestaurants = mockRestaurants
-    .filter((r) => bookmarkedIds.has(r.id))
-    .map(r => ({
-      ...r,
-      isBookmarked: true
-    }))
-    .filter((r) => {
-      if (selectedSituation === "전체") return true;
-      return r.tags.includes(selectedSituation);
-    });
+  // TODO: 저장한 맛집 API 연동 시 GET /api/... 호출로 savedRestaurants 설정
+  const filteredSaved = savedRestaurants.filter((r) => {
+    if (selectedSituation === "전체") return true;
+    return r.tags.includes(selectedSituation);
+  });
 
   const handleBookmark = (id: string) => {
     setBookmarkedIds((prev) => {
@@ -33,6 +27,7 @@ export function SavedList() {
       newSet.delete(id);
       return newSet;
     });
+    setSavedRestaurants((prev) => prev.filter((r) => r.id !== id));
   };
 
   return (
@@ -60,16 +55,16 @@ export function SavedList() {
 
         {/* Saved Count */}
         <p className="text-sm text-gray-600 mb-4">
-          {savedRestaurants.length}개의 맛집을 저장했어요
+          {filteredSaved.length}개의 맛집을 저장했어요
         </p>
 
         {/* Saved List */}
-        {savedRestaurants.length > 0 ? (
+        {filteredSaved.length > 0 ? (
           <div className="space-y-4">
-            {savedRestaurants.map((restaurant) => (
+            {filteredSaved.map((restaurant) => (
               <RestaurantCard
                 key={restaurant.id}
-                restaurant={restaurant}
+                restaurant={{ ...restaurant, isBookmarked: true }}
                 onBookmark={handleBookmark}
               />
             ))}

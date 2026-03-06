@@ -44,7 +44,7 @@ export function TogetherBoard() {
       setLoading(true);
       try {
         const [storeRes, postsRes] = await Promise.all([
-          fetch(`/api/store/${restaurantId}`, { cache: "no-store" }),
+          fetch(`/api/restaurants/${restaurantId}`, { cache: "no-store" }),
           fetch(
             `/api/together-posts?rid=${encodeURIComponent(
               restaurantId,

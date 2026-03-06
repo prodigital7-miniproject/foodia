@@ -13,22 +13,13 @@ export interface Restaurant {
   address: string;
   hours: string;
   menuItems: MenuItem[];
-  reviews: Review[];
+  reviews: Review[]; // API/DB shape: id, rid, nickname, rating, content, createdAt, updatedAt
   isBookmarked?: boolean;
 }
 
 export interface MenuItem {
   name: string;
   price: string;
-}
-
-export interface Review {
-  id: string;
-  author: string;
-  rating: number;
-  content: string;
-  tags: string[];
-  date: string;
 }
 
 export interface TogetherPost {

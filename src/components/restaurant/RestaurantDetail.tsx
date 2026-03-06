@@ -54,7 +54,7 @@ export function RestaurantDetail({ rid }: { rid: string }) {
       try {
         setLoading(true);
 
-        const res = await fetch(`/api/store/${rid}`, {
+        const res = await fetch(`/api/restaurants/${rid}`, {
           method: "GET",
           cache: "no-store",
         });
@@ -304,8 +304,7 @@ export function RestaurantDetail({ rid }: { rid: string }) {
                     ) : (
                       <>
                         <ChevronDown size={16} />
-                        메뉴 더보기 (
-                        {(restaurant.menu ?? []).length - 3}개)
+                        메뉴 더보기 ({(restaurant.menu ?? []).length - 3}개)
                       </>
                     )}
                   </button>
@@ -321,7 +320,9 @@ export function RestaurantDetail({ rid }: { rid: string }) {
         <div className="bg-white px-4 py-4 border-b border-gray-200">
           <button
             type="button"
-            onClick={() => router.push(`/together/${encodeURIComponent(restaurant.rid)}`)}
+            onClick={() =>
+              router.push(`/together/${encodeURIComponent(restaurant.rid)}`)
+            }
             className="w-full flex items-center justify-between px-3 py-3 rounded-xl border border-orange-100 bg-orange-50 hover:bg-orange-100 transition-colors"
           >
             <div className="flex items-center gap-2">
@@ -359,37 +360,35 @@ export function RestaurantDetail({ rid }: { rid: string }) {
           <div className="space-y-4">
             {reviews.length > 0 ? (
               <>
-                {reviews
-                  .slice(0, reviewVisibleCount)
-                  .map((review) => (
-                    <div
-                      key={review.id}
-                      className="pb-4 border-b border-gray-100 last:border-0"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">
-                          {review.nickname}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <Star
-                            size={14}
-                            className="fill-orange-400 text-orange-400"
-                          />
-                          <span className="text-sm text-gray-700">
-                            {review.rating}
-                          </span>
-                        </div>
-                      </div>
-
-                      <p className="text-sm text-gray-700 mb-2">
-                        {review.content}
-                      </p>
-
-                      <span className="text-xs text-gray-400 mt-2 block">
-                        {formatReviewDate(review.createdAt)}
+                {reviews.slice(0, reviewVisibleCount).map((review) => (
+                  <div
+                    key={review.id}
+                    className="pb-4 border-b border-gray-100 last:border-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-900">
+                        {review.nickname}
                       </span>
+                      <div className="flex items-center gap-1">
+                        <Star
+                          size={14}
+                          className="fill-orange-400 text-orange-400"
+                        />
+                        <span className="text-sm text-gray-700">
+                          {review.rating}
+                        </span>
+                      </div>
                     </div>
-                  ))}
+
+                    <p className="text-sm text-gray-700 mb-2">
+                      {review.content}
+                    </p>
+
+                    <span className="text-xs text-gray-400 mt-2 block">
+                      {formatReviewDate(review.createdAt)}
+                    </span>
+                  </div>
+                ))}
                 {reviewVisibleCount < reviews.length && (
                   <>
                     <div
@@ -401,16 +400,12 @@ export function RestaurantDetail({ rid }: { rid: string }) {
                       type="button"
                       onClick={() =>
                         setReviewVisibleCount((prev) =>
-                          Math.min(
-                            prev + REVIEW_LOAD_MORE,
-                            reviews.length,
-                          ),
+                          Math.min(prev + REVIEW_LOAD_MORE, reviews.length),
                         )
                       }
                       className="w-full py-3 text-sm text-orange-600 font-medium border border-orange-200 rounded-lg hover:bg-orange-50"
                     >
-                      리뷰 더보기 (
-                      {reviews.length - reviewVisibleCount}개 남음)
+                      리뷰 더보기 ({reviews.length - reviewVisibleCount}개 남음)
                     </button>
                   </>
                 )}
