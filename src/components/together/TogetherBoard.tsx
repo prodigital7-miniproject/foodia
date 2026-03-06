@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Users, Plus } from "lucide-react";
 import type { Store } from "@/lib/types";
+import { Footer } from "../layout/Footer";
 
 type TogetherPostItem = {
   id: number;
@@ -142,7 +143,7 @@ export function TogetherBoard() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
+    <div className="min-h-screen bg-gray-50 pb-0 flex flex-col">
 
       {/* ── 헤더 ── */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
@@ -160,134 +161,133 @@ export function TogetherBoard() {
           </div>
         </div>
       </header>
+      <div className="flex-grow">
+        <div className="max-w-screen-lg mx-auto px-4 pt-4">
 
-      <div className="max-w-screen-lg mx-auto px-4 pt-4">
-
-        {/* ── 식당 정보 카드 ── */}
-        <div className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-100 flex gap-3">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-100 shrink-0">
-            <img
-              src={restaurant.imgUrl || "/images/default-restaurant.jpg"}
-              alt={restaurant.name}
-              className="w-full h-full object-cover"
-            />
+          {/* ── 식당 정보 카드 ── */}
+          <div className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-100 flex gap-3">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-100 shrink-0">
+              <img
+                src={restaurant.imgUrl || "/images/default-restaurant.jpg"}
+                alt={restaurant.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-gray-900 text-sm mb-0.5 truncate">{restaurant.name}</h3>
+              <p className="text-xs text-gray-400 mb-1">{restaurant.category}</p>
+              <p className="text-xs text-gray-400 truncate">{restaurant.address}</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-gray-900 text-sm mb-0.5 truncate">{restaurant.name}</h3>
-            <p className="text-xs text-gray-400 mb-1">{restaurant.category}</p>
-            <p className="text-xs text-gray-400 truncate">{restaurant.address}</p>
-          </div>
-        </div>
 
-        {/* ── 모집글 개수 ── */}
-        <p className="text-xs font-semibold text-gray-400 mb-3">
-          {posts.length}개의 모집글
-        </p>
+          {/* ── 모집글 개수 ── */}
+          <p className="text-xs font-semibold text-gray-400 mb-3">
+            {posts.length}개의 모집글
+          </p>
 
-        {/* ── 모집글 목록 ── */}
-        {posts.length > 0 ? (
-          <div className="space-y-3">
-            {posts.map((post) => {
-              const hasParticipated = participatedPostIds.has(post.id);
-              const isClosed = post.status !== "open";
-              const isFull = post.participantCount >= post.maxParticipants;
-              const disabled = hasParticipated || isClosed || isFull;
+          {/* ── 모집글 목록 ── */}
+          {posts.length > 0 ? (
+            <div className="space-y-3">
+              {posts.map((post) => {
+                const hasParticipated = participatedPostIds.has(post.id);
+                const isClosed = post.status !== "open";
+                const isFull = post.participantCount >= post.maxParticipants;
+                const disabled = hasParticipated || isClosed || isFull;
 
-              return (
-                <div
-                  key={post.id}
-                  className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
-                >
-                  {/* 상단: 작성자 + 상태 */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
-                        <span className="text-[11px] font-bold text-orange-500">
-                          {(post.isAnonymous ? "익" : (post.authorName ?? "익"))[0]}
+                return (
+                  <div
+                    key={post.id}
+                    className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+                  >
+                    {/* 상단: 작성자 + 상태 */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
+                          <span className="text-[11px] font-bold text-orange-500">
+                            {(post.isAnonymous ? "익" : (post.authorName ?? "익"))[0]}
+                          </span>
+                        </div>
+                        <span className="text-xs font-semibold text-gray-700">
+                          {post.isAnonymous ? "익명" : (post.authorName ?? "익명")}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {new Date(post.createdAt).toLocaleDateString("ko-KR")}
                         </span>
                       </div>
-                      <span className="text-xs font-semibold text-gray-700">
-                        {post.isAnonymous ? "익명" : (post.authorName ?? "익명")}
+                      <span className={`px-2.5 py-1 text-[11px] font-bold rounded-full ${
+                        isClosed
+                          ? "bg-gray-100 text-gray-400"
+                          : "bg-orange-50 text-orange-500"
+                      }`}>
+                        {isClosed ? "마감" : "모집 중"}
                       </span>
-                      <span className="text-xs text-gray-400">
-                        {new Date(post.createdAt).toLocaleDateString("ko-KR")}
+                    </div>
+
+                    {/* 내용 */}
+                    <p className="text-sm text-gray-700 leading-relaxed mb-3 whitespace-pre-wrap">
+                      {post.content}
+                    </p>
+
+                    {/* 참여 현황 */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="h-full bg-orange-400 rounded-full transition-all"
+                          style={{ width: `${Math.min((post.participantCount / post.maxParticipants) * 100, 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-gray-500 shrink-0">
+                        {post.participantCount} / {post.maxParticipants}명
                       </span>
                     </div>
-                    <span className={`px-2.5 py-1 text-[11px] font-bold rounded-full ${
-                      isClosed
-                        ? "bg-gray-100 text-gray-400"
-                        : "bg-orange-50 text-orange-500"
-                    }`}>
-                      {isClosed ? "마감" : "모집 중"}
-                    </span>
+
+                    {/* 참여자 목록 */}
+                    {post.participants && post.participants.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {post.participants.map((name, i) => (
+                          <span
+                            key={`${post.id}-${name}-${i}`}
+                            className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* 참여 버튼 */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenParticipate(post.id, post.status)}
+                      disabled={disabled}
+                      className={`w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 ${
+                        hasParticipated
+                          ? "bg-emerald-500 text-white cursor-default"
+                          : isClosed || isFull
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-orange-500 text-white hover:bg-orange-600 shadow-sm shadow-orange-200"
+                      }`}
+                    >
+                      {hasParticipated ? "✅ 참여완료" : isFull ? "정원마감" : isClosed ? "마감된 모집" : "💬 참여하기"}
+                    </button>
                   </div>
-
-                  {/* 내용 */}
-                  <p className="text-sm text-gray-700 leading-relaxed mb-3 whitespace-pre-wrap">
-                    {post.content}
-                  </p>
-
-                  {/* 참여 현황 */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="h-full bg-orange-400 rounded-full transition-all"
-                        style={{ width: `${Math.min((post.participantCount / post.maxParticipants) * 100, 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-semibold text-gray-500 shrink-0">
-                      {post.participantCount} / {post.maxParticipants}명
-                    </span>
-                  </div>
-
-                  {/* 참여자 목록 */}
-                  {post.participants && post.participants.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {post.participants.map((name, i) => (
-                        <span
-                          key={`${post.id}-${name}-${i}`}
-                          className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
-                          {name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* 참여 버튼 */}
-                  <button
-                    type="button"
-                    onClick={() => handleOpenParticipate(post.id, post.status)}
-                    disabled={disabled}
-                    className={`w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 ${
-                      hasParticipated
-                        ? "bg-emerald-500 text-white cursor-default"
-                        : isClosed || isFull
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-orange-500 text-white hover:bg-orange-600 shadow-sm shadow-orange-200"
-                    }`}
-                  >
-                    {hasParticipated ? "✅ 참여완료" : isFull ? "정원마감" : isClosed ? "마감된 모집" : "💬 참여하기"}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <p className="text-4xl mb-3">🍽️</p>
-            <p className="text-gray-600 font-semibold">아직 모집글이 없어요</p>
-            <p className="text-sm text-gray-400 mt-1">첫 번째 모집글을 작성해보세요!</p>
-          </div>
-        )}
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-4xl mb-3">🍽️</p>
+              <p className="text-gray-600 font-semibold">아직 모집글이 없어요</p>
+              <p className="text-sm text-gray-400 mt-1">첫 번째 모집글을 작성해보세요!</p>
+            </div>
+          )}
+        </div>
       </div>
-
       {/* ── 참여 모달 ── */}
       {activePostId !== null && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40">
-          <div className="w-full max-w-screen-sm mx-auto bg-white rounded-t-3xl px-6 pt-5 pb-8 shadow-xl">
-            <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-screen-sm mx-auto bg-white rounded-3xl px-6 pt-5 pb-8 shadow-xl">
             <h2 className="text-base font-bold text-gray-900 mb-1">참여하기 👋</h2>
             <p className="text-xs text-gray-400 mb-5">모집글에 표시될 닉네임을 입력해 주세요.</p>
 
@@ -331,6 +331,7 @@ export function TogetherBoard() {
               </button>
             </div>
           </div>
+
         </div>
       )}
 
@@ -343,7 +344,7 @@ export function TogetherBoard() {
           <Plus size={22} />
         </Link>
       </div>
-
+      <Footer/>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   MessageCircle, Users, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { Store } from "@/lib/types";
+import { Footer } from "../layout/Footer";
 
 type StoreReview = {
   id: number; rid: string; nickname: string; imgUrl: string | null;
@@ -382,6 +383,7 @@ export function RestaurantDetail({ rid }: { rid: string }) {
         </div>
 
       </div>
+      <Footer/>
     </div>
   );
 }

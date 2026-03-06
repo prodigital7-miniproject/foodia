@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { Footer } from "../layout/Footer";
 
 type StoreSummary = {
   rid: string;
@@ -91,7 +92,7 @@ export function TogetherWrite() {
         </div>
       </header>
 
-      <div className="max-w-screen-sm mx-auto px-4 pt-4 space-y-3">
+      <div className="max-w-screen-lg mx-auto px-4 pt-4 space-y-3">
 
         {/* ── 식당 정보 ── */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex gap-3">
@@ -195,6 +196,7 @@ export function TogetherWrite() {
         </button>
 
       </div>
+    <Footer/>
     </div>
   );
 }
