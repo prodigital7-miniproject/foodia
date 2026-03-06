@@ -76,7 +76,7 @@ export function TogetherWrite() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
 
       {/* ── 헤더 ── */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
@@ -91,8 +91,8 @@ export function TogetherWrite() {
           <span className="text-sm text-gray-400 truncate">· {restaurant.name}</span>
         </div>
       </header>
-
-      <div className="max-w-screen-lg mx-auto px-4 pt-4 space-y-3">
+      <div className="flex-grow">
+      <div className="max-w-screen-lg mx-auto px-4 pt-4 pb-28 space-y-3">
 
         {/* ── 식당 정보 ── */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex gap-3">
@@ -195,6 +195,7 @@ export function TogetherWrite() {
           모집글 등록하기
         </button>
 
+      </div>
       </div>
     <Footer/>
     </div>

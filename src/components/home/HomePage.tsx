@@ -23,9 +23,9 @@ export function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
       <Header />
-
+      <div className="flex-grow">
       <main className="pt-14 pb-24 max-w-screen-lg mx-auto px-4">
         {/* ── 히어로 배너 ── */}
         <section className="mt-6 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 px-6 py-8 flex items-center justify-between overflow-hidden relative">
@@ -112,8 +112,7 @@ export function HomePage() {
           <TogetherSlider limit={100} />
         </section>
       </main>
-
-      {/* ── 푸터 ── */}
+      </div>
       <Footer/>
 
     </div>

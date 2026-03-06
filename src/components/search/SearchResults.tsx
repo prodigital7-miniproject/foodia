@@ -218,7 +218,7 @@ export function SearchResults() {
   ].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* ── 헤더: 뒤로가기 + 타이틀만 ── */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
         <div className="max-w-screen-lg mx-auto px-4 h-14 flex items-center gap-3">
@@ -236,7 +236,7 @@ export function SearchResults() {
           </span>
         </div>
       </header>
-
+      <div className="flex-grow">
       <div className="max-w-screen-lg mx-auto px-4 py-4">
         {/* ── 검색창 (헤더 아래 본문 상단) ── */}
         <div className="mb-4">
@@ -351,7 +351,7 @@ export function SearchResults() {
           </div>
         )}
       </div>
-
+      </div>
       <Footer />
     </div>
   );
