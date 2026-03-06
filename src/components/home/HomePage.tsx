@@ -26,7 +26,6 @@ export function HomePage() {
       <Header />
 
       <main className="pt-14 pb-24 max-w-screen-lg mx-auto px-4">
-
         {/* ── 히어로 배너 ── */}
         <section className="mt-6 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 px-6 py-8 flex items-center justify-between overflow-hidden relative">
           <div className="z-10">
@@ -34,7 +33,8 @@ export function HomePage() {
               음식 이상형 월드컵
             </p>
             <h1 className="text-2xl font-black text-gray-900 leading-snug">
-              오늘 뭐 먹지?<br />
+              오늘 뭐 먹지?
+              <br />
               <span className="text-orange-500">취향대로</span> 골라봐요
             </h1>
             <button
@@ -49,14 +49,18 @@ export function HomePage() {
               오늘 뭐 먹지? 🤔
               <div className="absolute right-3 -bottom-1.5 w-3 h-3 bg-white rotate-45" />
             </div>
-            <img src="/idel-cup.svg" alt="음식 월드컵" className="w-24 h-auto drop-shadow-lg" />
+            <img
+              src="/idel-cup.svg"
+              alt="음식 월드컵"
+              className="w-24 h-auto drop-shadow-lg"
+            />
           </div>
         </section>
 
         {/* ── 검색 섹션 (히어로 아래 별도) ── */}
         <section className="mt-16 mb-16">
           <SearchInputWithSuggestions
-            placeholder="음식점·음식 이름 검색 (예: 교대 이층집, 파스타)"
+            placeholder="음식점·음식 이름 검색 (예: 보승회관, 파스타)"
             value={searchQuery}
             onChange={setSearchQuery}
             onSubmit={handleSearch}
@@ -69,12 +73,36 @@ export function HomePage() {
             음식 종류별로 찾기
           </h2>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-            <CategoryButton icon="🍚" label="한식" onClick={() => handleCategoryClick("한식")} />
-            <CategoryButton icon="🍜" label="중식" onClick={() => handleCategoryClick("중식")} />
-            <CategoryButton icon="🍣" label="일식" onClick={() => handleCategoryClick("일식")} />
-            <CategoryButton icon="🍝" label="양식" onClick={() => handleCategoryClick("양식")} />
-            <CategoryButton icon="☕" label="카페"  onClick={() => handleCategoryClick("카페")} />
-            <CategoryButton icon="🍴" label="전체" onClick={() => handleCategoryClick("전체")} />
+            <CategoryButton
+              icon="🍚"
+              label="한식"
+              onClick={() => handleCategoryClick("한식")}
+            />
+            <CategoryButton
+              icon="🍜"
+              label="중식"
+              onClick={() => handleCategoryClick("중식")}
+            />
+            <CategoryButton
+              icon="🍣"
+              label="일식"
+              onClick={() => handleCategoryClick("일식")}
+            />
+            <CategoryButton
+              icon="🍝"
+              label="양식"
+              onClick={() => handleCategoryClick("양식")}
+            />
+            <CategoryButton
+              icon="☕"
+              label="카페"
+              onClick={() => handleCategoryClick("카페")}
+            />
+            <CategoryButton
+              icon="🍴"
+              label="전체"
+              onClick={() => handleCategoryClick("전체")}
+            />
           </div>
         </section>
 
@@ -92,7 +120,9 @@ export function HomePage() {
             <p className="font-semibold text-gray-600">Foodia</p>
             <p>서울특별시 성동구 성수일로8길 59 평화빌딩 B동 2층</p>
             <p>고객센터: 010-6661-1534 (평일 09:00 – 18:00)</p>
-            <p className="pt-1">Copyright © {new Date().getFullYear()} 푸디아 All rights reserved.</p>
+            <p className="pt-1">
+              Copyright © {new Date().getFullYear()} 푸디아 All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
