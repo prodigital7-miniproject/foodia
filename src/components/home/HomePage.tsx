@@ -2,20 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
 import { CategoryButton } from "@/components/home/CategoryButton";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Header } from "../layout/Header";
+import { SearchInputWithSuggestions } from "@/components/search/SearchInputWithSuggestions";
 import TogetherSlider from "./TogetherSlider";
 
 export function HomePage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      router.push(`/search?location=${encodeURIComponent(searchQuery)}`);
-    }
+  const handleSearch = (query: string) => {
+    const q = (query || searchQuery).trim();
+    if (q) router.push(`/search?q=${encodeURIComponent(q)}`);
   };
 
   const handleCategoryClick = (category: string) => {
@@ -56,24 +55,12 @@ export function HomePage() {
 
         {/* ── 검색 섹션 (히어로 아래 별도) ── */}
         <section className="mt-16 mb-16">
-       
-          <div className="flex items-center gap-2 bg-white border-2 border-orange-400 rounded-2xl px-5 py-3.5 shadow-sm focus-within:ring-2 focus-within:ring-orange-100 transition-all ">
-            <Search className="w-5 h-5 text-orange-400 shrink-0" />
-            <input
-              type="text"
-              placeholder="음식점 이름을 검색해보세요.  (예: 교대 이층집, 보승회관)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="flex-1 bg-transparent text-sm text-gray-700 placeholder:text-gray-400 outline-none"
-            />
-            <button
-              onClick={handleSearch}
-              className="shrink-0 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-4 py-1.5 rounded-xl transition-colors"
-            >
-              검색
-            </button>
-          </div>
+          <SearchInputWithSuggestions
+            placeholder="음식점·음식 이름 검색 (예: 교대 이층집, 파스타)"
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSubmit={handleSearch}
+          />
         </section>
 
         {/* ── 카테고리 ── */}

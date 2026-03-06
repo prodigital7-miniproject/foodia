@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowLeft, SlidersHorizontal } from "lucide-react";
-import { SearchBar } from "@/components/search/SearchBar";
+import { SearchInputWithSuggestions } from "@/components/search/SearchInputWithSuggestions";
 import { FilterChips } from "@/components/search/FilterChips";
 import { RestaurantCard } from "@/components/restaurant/RestaurantCard";
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -15,8 +15,9 @@ export function SearchResults() {
 
   const locationParam = searchParams.get("location") || "성수역";
   const categoryParam = searchParams.get("category");
+  const queryParam = searchParams.get("q");
 
-  const [searchQuery, setSearchQuery] = useState(locationParam);
+  const [searchQuery, setSearchQuery] = useState(queryParam ?? locationParam);
   const [selectedCategory, setSelectedCategory] = useState<FoodCategory>(
     (categoryParam as FoodCategory) || "전체"
   );
@@ -29,11 +30,45 @@ export function SearchResults() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const foodCategories: FoodCategory[] = ["전체", "한식", "중식", "일식", "양식", "카페"];
-  const priceRanges: PriceRange[] = ["전체", "1만원 이하", "1-2만원", "2만원 이상"];
-  const situationTags: SituationTag[] = ["전체", "혼밥", "데이트", "친구모임"];
+  const isSearchByQuery = queryParam != null && queryParam.length > 0;
 
+  // URL의 q와 동기화
   useEffect(() => {
+    setSearchQuery(queryParam ?? locationParam);
+  }, [queryParam, locationParam]);
+
+  // 키워드 검색 모드: /api/search?q=
+  useEffect(() => {
+    if (!isSearchByQuery) return;
+    const controller = new AbortController();
+    const { signal } = controller;
+    setLoading(true);
+    setError(null);
+    fetch(`/api/search?q=${encodeURIComponent(queryParam!)}`, { signal })
+      .then((res) => res.json())
+      .then((json) => {
+        if (signal.aborted) return;
+        if (json.success && Array.isArray(json.data)) {
+          setRestaurants(json.data);
+        } else {
+          setRestaurants([]);
+          setError(json.error?.message ?? "검색 결과를 불러오지 못했습니다.");
+        }
+      })
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setRestaurants([]);
+        setError("검색 결과를 불러오지 못했습니다.");
+      })
+      .finally(() => {
+        if (!signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [queryParam, isSearchByQuery]);
+
+  // 필터/목록 모드: /api/restaurants
+  useEffect(() => {
+    if (isSearchByQuery) return;
     const controller = new AbortController();
     const { signal } = controller;
 
@@ -66,7 +101,16 @@ export function SearchResults() {
       });
 
     return () => controller.abort();
-  }, [selectedCategory, selectedPrice, selectedSituation, sortBy]);
+  }, [isSearchByQuery, selectedCategory, selectedPrice, selectedSituation, sortBy]);
+
+  const foodCategories: FoodCategory[] = ["전체", "한식", "중식", "일식", "양식", "카페"];
+  const priceRanges: PriceRange[] = ["전체", "1만원 이하", "1-2만원", "2만원 이상"];
+  const situationTags: SituationTag[] = ["전체", "혼밥", "데이트", "친구모임"];
+
+  const handleSearchSubmit = (query: string) => {
+    if (!query.trim()) return;
+    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+  };
 
   const filteredRestaurants = useMemo(
     () =>
@@ -99,10 +143,12 @@ export function SearchResults() {
               <ArrowLeft size={20} className="text-gray-700" />
             </button>
             <div className="flex-1">
-              <SearchBar
-                placeholder="다른 지역 검색"
+              <SearchInputWithSuggestions
+                variant="compact"
+                placeholder="음식점·음식 이름 검색"
                 value={searchQuery}
                 onChange={setSearchQuery}
+                onSubmit={handleSearchSubmit}
               />
             </div>
           </div>
@@ -110,69 +156,72 @@ export function SearchResults() {
       </div>
 
       <div className="max-w-md mx-auto px-4 py-4">
-        {/* Location & Result Count */}
+        {/* Title & Result Count */}
         <div className="mb-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">{locationParam} 맛집</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">
+            {isSearchByQuery ? `"${queryParam}" 검색 결과` : `${locationParam} 맛집`}
+          </h2>
           <p className="text-sm text-gray-600">{filteredRestaurants.length}개의 맛집을 찾았어요</p>
         </div>
 
-        {/* Filters */}
-        <div className="space-y-3 mb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <SlidersHorizontal size={16} className="text-gray-600" />
-              <span className="text-sm font-semibold text-gray-700">음식 종류</span>
+        {/* Filters: 키워드 검색 모드가 아닐 때만 표시 */}
+        {!isSearchByQuery && (
+          <div className="space-y-3 mb-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <SlidersHorizontal size={16} className="text-gray-600" />
+                <span className="text-sm font-semibold text-gray-700">음식 종류</span>
+              </div>
+              <FilterChips
+                options={foodCategories}
+                selected={selectedCategory}
+                onChange={(value) => setSelectedCategory(value as FoodCategory)}
+              />
             </div>
-            <FilterChips
-              options={foodCategories}
-              selected={selectedCategory}
-              onChange={(value) => setSelectedCategory(value as FoodCategory)}
-            />
-          </div>
 
-          <div>
-            <span className="text-sm font-semibold text-gray-700 mb-2 block">가격대</span>
-            <FilterChips
-              options={priceRanges}
-              selected={selectedPrice}
-              onChange={(value) => setSelectedPrice(value as PriceRange)}
-            />
-          </div>
+            <div>
+              <span className="text-sm font-semibold text-gray-700 mb-2 block">가격대</span>
+              <FilterChips
+                options={priceRanges}
+                selected={selectedPrice}
+                onChange={(value) => setSelectedPrice(value as PriceRange)}
+              />
+            </div>
 
-          <div>
-            <span className="text-sm font-semibold text-gray-700 mb-2 block">상황</span>
-            <FilterChips
-              options={situationTags}
-              selected={selectedSituation}
-              onChange={(value) => setSelectedSituation(value as SituationTag)}
-            />
-          </div>
+            <div>
+              <span className="text-sm font-semibold text-gray-700 mb-2 block">상황</span>
+              <FilterChips
+                options={situationTags}
+                selected={selectedSituation}
+                onChange={(value) => setSelectedSituation(value as SituationTag)}
+              />
+            </div>
 
-          {/* Sort */}
-          <div className="flex items-center gap-2 pt-2">
-            <span className="text-sm text-gray-600">정렬:</span>
-            <button
-              onClick={() => setSortBy("distance")}
-              className={`text-sm px-3 py-1 rounded-full ${
-                sortBy === "distance"
-                  ? "bg-orange-600 text-white"
-                  : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              거리순
-            </button>
-            <button
-              onClick={() => setSortBy("rating")}
-              className={`text-sm px-3 py-1 rounded-full ${
-                sortBy === "rating"
-                  ? "bg-orange-600 text-white"
-                  : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              평점순
-            </button>
+            <div className="flex items-center gap-2 pt-2">
+              <span className="text-sm text-gray-600">정렬:</span>
+              <button
+                onClick={() => setSortBy("distance")}
+                className={`text-sm px-3 py-1 rounded-full ${
+                  sortBy === "distance"
+                    ? "bg-orange-600 text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                거리순
+              </button>
+              <button
+                onClick={() => setSortBy("rating")}
+                className={`text-sm px-3 py-1 rounded-full ${
+                  sortBy === "rating"
+                    ? "bg-orange-600 text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                평점순
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Results */}
         <div className="space-y-4">
