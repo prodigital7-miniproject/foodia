@@ -59,7 +59,7 @@ const getRoundName = (bracketSize: number) => {
 
 export default function FoodWorldCup() {
   const [screen, setScreen] = useState<"select" | "battle" | "result">(
-    "select"
+    "select",
   );
   const [currentCategory, setCurrentCategory] = useState("");
   const [bracket, setBracket] = useState<any[]>([]);
@@ -297,7 +297,7 @@ export default function FoodWorldCup() {
                       </div>
                     )}
                   </React.Fragment>
-                )
+                ),
               )}
             </main>
 

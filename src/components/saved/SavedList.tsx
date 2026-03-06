@@ -6,6 +6,7 @@ import { RestaurantCard } from "@/components/restaurant/RestaurantCard";
 import { FilterChips } from "@/components/search/FilterChips";
 import { SituationTag } from "@/lib/types";
 import type { Restaurant } from "@/lib/types";
+import { Footer } from "@/components/layout/Footer";
 
 export function SavedList() {
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
@@ -22,7 +23,7 @@ export function SavedList() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-md mx-auto px-4 py-6">
@@ -33,7 +34,7 @@ export function SavedList() {
           <p className="text-sm text-gray-600">나중에 가고 싶은 맛집을 모아보세요</p>
         </div>
       </div>
-
+      <div className="flex-grow">
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Filters */}
         <div className="mb-6">
@@ -69,6 +70,8 @@ export function SavedList() {
           </div>
         )}
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }

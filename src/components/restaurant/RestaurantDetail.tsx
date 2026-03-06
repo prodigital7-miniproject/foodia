@@ -134,7 +134,7 @@ export function RestaurantDetail({ rid }: { rid: string }) {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
 
       {/* ── 헤더 ── */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
@@ -150,7 +150,7 @@ export function RestaurantDetail({ rid }: { rid: string }) {
           </h1>
         </div>
       </header>
-
+      <div className="flex-grow">
       <div className="max-w-screen-lg mx-auto px-4 pt-4">
 
         {/* ── 기본 정보 카드 ── */}
@@ -382,6 +382,7 @@ export function RestaurantDetail({ rid }: { rid: string }) {
           )}
         </div>
 
+      </div>
       </div>
       <Footer/>
     </div>

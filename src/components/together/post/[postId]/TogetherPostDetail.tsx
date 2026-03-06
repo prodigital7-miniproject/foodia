@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ArrowLeft } from "lucide-react";
+import { Footer } from "@/components/layout/Footer";
 
 
 export type TogetherPostDetailData = {
@@ -126,7 +127,7 @@ export function TogetherPostDetail({ data }: TogetherPostDetailProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* 상단 네비게이션 */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-md mx-auto px-4 py-4">
@@ -146,7 +147,7 @@ export function TogetherPostDetail({ data }: TogetherPostDetailProps) {
           </div>
         </div>
       </div>
-
+      <div className="flex-grow">
       <div className="max-w-md mx-auto px-4 py-6">
         {/* 식당 정보 카드 */}
         <div className="bg-white rounded-2xl p-4 mb-5 border border-gray-100 shadow-sm flex gap-4">
@@ -239,7 +240,8 @@ export function TogetherPostDetail({ data }: TogetherPostDetailProps) {
           </button>
         </div>
       </div>
-
+      </div>
+      <Footer />
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40">
           <div className="w-full max-w-md mx-auto mb-16 bg-white rounded-t-3xl px-6 pt-5 pb-6 shadow-xl">
