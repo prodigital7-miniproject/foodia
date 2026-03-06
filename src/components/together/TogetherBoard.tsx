@@ -224,20 +224,23 @@ export function TogetherBoard() {
 
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Restaurant Info */}
-        <div className="bg-white rounded-lg p-4 mb-6 border border-gray-200 flex gap-3">
+        <Link
+          href={`/restaurant/${restaurantId}`}
+          className="bg-white rounded-lg p-4 mb-6 border border-gray-200 flex gap-3 hover:border-orange-300 hover:bg-orange-50/30 transition-colors cursor-pointer"
+        >
           <img
             src={restaurant.imgUrl || "/images/default-restaurant.jpg"}
             alt={restaurant.name}
             className="w-20 h-20 rounded-lg object-cover"
           />
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 mb-1">
               {restaurant.name}
             </h3>
             <p className="text-sm text-gray-600 mb-2">{restaurant.category}</p>
-            <p className="text-xs text-gray-500">{restaurant.address}</p>
+            <p className="text-xs text-gray-500 truncate">{restaurant.address}</p>
           </div>
-        </div>
+        </Link>
 
         {/* Post Count */}
         <p className="text-sm text-gray-600 mb-4">
