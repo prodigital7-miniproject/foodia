@@ -101,76 +101,59 @@ export function SearchInputWithSuggestions({
   const hasSuggestions =
     suggestions.storeNames.length > 0 || suggestions.foodSuggestions.length > 0;
 
-  if (variant === "compact") {
-    return (
-      <div className="relative" ref={wrapperRef}>
-        <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-900"
-          size={20}
-          strokeWidth={2}
-        />
+  // compact variant 부분만 교체 (return 위 variant === "compact" 블록)
+if (variant === "compact") {
+  return (
+    <div className="relative" ref={wrapperRef}>
+      <div className="flex items-center gap-2 bg-white border-2 border-orange-300 rounded-2xl px-4 py-2.5 focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+        <Search className="w-4 h-4 text-orange-400 shrink-0" />
         <input
           type="text"
           placeholder={placeholder}
           value={value}
-          onChange={(e) => {
-            setIsSearching(true);
-            onChange(e.target.value);
-          }}
+          onChange={(e) => { setIsSearching(true); onChange(e.target.value); }}
           onFocus={() => setIsSearching(true)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit(value)}
-          className="w-full pl-12 pr-4 py-3 bg-white rounded-full text-gray-900 placeholder:text-gray-500 border-2 border-amber-900"
+          className="flex-1 bg-transparent text-sm text-gray-700 placeholder:text-gray-400 outline-none"
         />
-        {open && (loading || hasSuggestions) && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-64 overflow-y-auto">
-            {loading ? (
-              <div className="p-3 text-sm text-gray-500">검색 중...</div>
-            ) : (
-              <>
-                {suggestions.storeNames.length > 0 && (
-                  <div className="p-2 border-b border-gray-100">
-                    <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                      식당
-                    </div>
-                    {suggestions.storeNames.map((name, i) => (
-                      <button
-                        key={`store-${i}`}
-                        type="button"
-                        onClick={() => handleSelect(name)}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-800 hover:bg-orange-50 rounded-lg"
-                      >
-                        {name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {suggestions.foodSuggestions.length > 0 && (
-                  <div className="p-2">
-                    <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                      음식
-                    </div>
-                    {suggestions.foodSuggestions.map((f, i) => (
-                      <button
-                        key={`food-${i}`}
-                        type="button"
-                        onClick={() => handleSelect(f.name)}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-800 hover:bg-orange-50 rounded-lg"
-                      >
-                        {f.name}
-                        {f.category ? (
-                          <span className="text-gray-400 ml-1">({f.category})</span>
-                        ) : null}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
       </div>
-    );
-  }
+      {/* 드롭다운 — 기존 유지 */}
+      {open && (loading || hasSuggestions) && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-2xl shadow-lg z-50 max-h-64 overflow-y-auto">
+          {loading ? (
+            <div className="p-3 text-sm text-gray-400">검색 중...</div>
+          ) : (
+            <>
+              {suggestions.storeNames.length > 0 && (
+                <div className="p-2 border-b border-gray-100">
+                  <div className="px-2 py-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">식당</div>
+                  {suggestions.storeNames.map((name, i) => (
+                    <button key={`store-${i}`} type="button" onClick={() => handleSelect(name)}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-800 hover:bg-orange-50 rounded-xl">
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {suggestions.foodSuggestions.length > 0 && (
+                <div className="p-2">
+                  <div className="px-2 py-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">음식</div>
+                  {suggestions.foodSuggestions.map((f, i) => (
+                    <button key={`food-${i}`} type="button" onClick={() => handleSelect(f.name)}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-800 hover:bg-orange-50 rounded-xl">
+                      {f.name}
+                      {f.category && <span className="text-gray-400 ml-1">({f.category})</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
   return (
     <div className="relative" ref={wrapperRef}>
