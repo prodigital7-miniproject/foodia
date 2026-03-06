@@ -28,6 +28,7 @@ export async function GET(
       status: togetherPostTable.status,
       isAnonymous: togetherPostTable.isAnonymous,
       createdAt: togetherPostTable.createdAt,
+      maxParticipants: togetherPostTable.maxParticipants,
       storeName: storeTable.name,
       storeCategory: storeTable.cuisineType,
       storeAddress: storeTable.address,

@@ -223,7 +223,7 @@ export function TogetherBoard() {
                           ? "bg-gray-100 text-gray-400"
                           : "bg-orange-50 text-orange-500"
                       }`}>
-                        {isClosed ? "마감" : "모집 중"}
+                        {isClosed ? "마감" : isFull ? "모집 완료" : "모집 중"}
                       </span>
                     </div>
 
