@@ -6,13 +6,13 @@
 
 ## 🎯 프로젝트 개요
 
-**Foodia**는 사용자가 점심/저녁 시간에 빠르게 근처 맛집을 찾고, 간단하게 식사 메이트를 구할 수 있도록 돕는 서비스입니다.
+**Foodia**는 프로디지털아카데미 교육생들이 점심시간에 빠르게 근처 맛집을 찾고, 간단하게 식사 메이트를 구할 수 있도록 돕는 서비스입니다.
 
 ### 핵심 가치
 
 - ⚡ **빠른 탐색:** 복잡한 정보 없이 필터로 원하는 맛집만 빠르게 찾기
 - 🎯 **직관적 비교:** 카드 UI로 핵심 정보만 한눈에 비교
-- 💾 **저장 기능:** 마음에 드는 맛집을 저장해서 나중에 방문
+- 💾 **음식 이상형 월드컵:** 토너먼트 방식을 이용한 메뉴 추천 서비스
 - 👥 **같이먹기:** 익명으로 간단하게 식사 메이트 모집
 
 ### MVP 범위
@@ -28,87 +28,147 @@
 
 ### 1. 지역 기반 맛집 탐색
 
-- 내 주변 또는 지역명 검색
+- 식당 이름 또는 메뉴명 검색
 - 음식 종류/가격대/상황별 필터
 - 거리순/평점순 정렬
 
 ### 2. 맛집 상세 정보
 
 - 기본 정보 (주소, 영업시간, 평점)
-- 대표 메뉴
+- 음식점 특징 태그
+- 메뉴
 - 사용자 리뷰
 - 같이먹기 모집글 미리보기
 
 ### 3. 간단 리뷰 작성
 
+- 닉네임 작
 - 별점 선택
 - 한줄 리뷰
-- 태그 선택 (가성비, 분위기좋음 등)
 
-### 4. 저장 목록
+### 4. 같이먹기 모집 게시판
 
-- 북마크한 맛집 모아보기
-- 상황별 필터
-- 빠른 재방문
-
-### 5. 같이먹기 모집 게시판
-
-- 익명 모집글 작성
-- 시간대/상황 태그 선택
+- 닉네임을 사용한 모집글 작성
+- 자세한 소개를 위한 모집글 작성
 - 관심 표시 및 오픈채팅 참여
 
 ---
 
-## 🛠️ 기술 스택
+# Foodia 프로젝트 구조 & 기술 스택
+
+## 기술 스택
 
 ### Frontend
 
-- **React 18.3.1** - UI 라이브러리
-- **TypeScript** - 타입 안정성
-- **React Router 7.13.0** - 클라이언트 사이드 라우팅
-- **Tailwind CSS 4.1** - 유틸리티 기반 스타일링
+| 구분            | 기술                                                                  |
+| --------------- | --------------------------------------------------------------------- |
+| **프레임워크**  | Next.js 15.1.0 (App Router)                                           |
+| **UI**          | React 18.3                                                            |
+| **언어**        | TypeScript 5.7                                                        |
+| **스타일**      | Tailwind CSS 4.x                                                      |
+| **아이콘**      | Lucide React                                                          |
+| **UI 컴포넌트** | Radix UI, shadcn/ui 계열 (Button, Dialog, Sheet 등), MUI 7.x, Emotion |
 
-### UI Components
+### Backend / Data
 
-- **Radix UI** - 접근성 높은 기본 컴포넌트
-- **Lucide React** - 아이콘 라이브러리
+| 구분             | 기술                                    |
+| ---------------- | --------------------------------------- |
+| **API**          | Next.js Route Handlers (`src/app/api/`) |
+| **DB**           | PostgreSQL - Supabase                   |
+| **ORM**          | Drizzle ORM                             |
+| **마이그레이션** | Drizzle Kit                             |
 
-### State Management
+### 기타
 
-- **React Hooks** - 로컬 상태 관리
-- **LocalStorage** - 북마크 영속성
-
----
-
-## 📂 프로젝트 구조
-
-```
-/src
-  /app
-    /components
-      Header.tsx             # 상단 헤더
-      SearchBar.tsx          # 검색 입력창
-      FilterChips.tsx        # 필터 칩 리스트
-      RestaurantCard.tsx     # 맛집 카드
-      CategoryButton.tsx     # 카테고리 버튼
-    /pages
-      Home.tsx               # 홈 화면
-      SearchResults.tsx      # 검색 결과
-      RestaurantDetail.tsx   # 맛집 상세
-      ReviewWrite.tsx        # 리뷰 작성
-      SavedList.tsx          # 저장 목록
-      TogetherBoard.tsx      # 같이먹기 게시판
-      TogetherWrite.tsx      # 같이먹기 글 작성
-      Profile.tsx            # 마이페이지
-    /data
-      mockData.ts            # 목 데이터 (성수역 맛집)
-    routes.ts                # 라우팅 설정
-    types.ts                 # 타입 정의
-    App.tsx                  # 메인 앱
-```
+| 구분              | 기술                                         |
+| ----------------- | -------------------------------------------- |
+| **검증**          | Zod                                          |
+| **패키지 매니저** | pnpm                                         |
+| **환경 변수**     | `.env` (DATABASE_URL, GOOGLE_MAP_API_KEY 등) |
 
 ---
 
+## 프로젝트 구조
+
+```
+foodia/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── layout.tsx          # 루트 레이아웃
+│   │   ├── page.tsx            # 홈 (/)
+│   │   ├── api/                # API 라우트
+│   │   │   ├── ideal-cup/      # 이상형 컵 (추천)
+│   │   │   ├── restaurants/    # 맛집 목록·상세·등록
+│   │   │   ├── review/         # 리뷰 CRUD
+│   │   │   ├── search/         # 검색·자동완성
+│   │   │   └── together-posts/ # 같이먹기 게시글
+│   │   ├── restaurant/[id]/    # 맛집 상세 페이지
+│   │   ├── review/write/[id]/  # 리뷰 작성
+│   │   ├── search/             # 검색 페이지
+│   │   ├── saved/              # 저장한 맛집
+│   │   ├── profile/            # 프로필
+│   │   ├── ideal-cup/          # 이상형 컵
+│   │   └── together/           # 같이먹기 (목록·작성·상세)
+│   │
+│   ├── components/
+│   │   ├── ui/                 # 공통 UI (Button, Dialog, Input 등)
+│   │   ├── layout/             # Header, BottomNav
+│   │   ├── home/               # 홈 (HomePage, TogetherSlider 등)
+│   │   ├── search/             # SearchBar, SearchResults, FilterChips
+│   │   ├── restaurant/         # RestaurantCard, RestaurantDetail
+│   │   ├── saved/              # SavedList
+│   │   ├── review/             # ReviewWrite
+│   │   ├── together/           # TogetherBoard, TogetherWrite, TogetherPostDetail
+│   │   ├── ideal-cup/          # IdealCupPage, Icons
+│   │   ├── profile/            # ProfilePage
+│   │   └── figma/              # ImageWithFallback 등
+│   │
+│   ├── lib/
+│   │   ├── db/                 # DB 스키마, 클라이언트 (Drizzle)
+│   │   ├── http/               # API 응답 헬퍼 (response.ok, response.fail)
+│   │   ├── restaurant/         # map-store-to-restaurant, stores-by-food
+│   │   ├── validators/         # Zod 스키마 (store, review, together-post)
+│   │   └── types.ts            # Restaurant, Store, Review 등 공통 타입
+│   │
+│   └── styles/
+│       └── tailwind.css
+│
+├── drizzle/                   # Drizzle 마이그레이션 SQL
+├── public/                    # 정적 파일 (이미지, 아이콘)
+├── scripts/                   # 시드 스크립트 (run-seed.ts 등)
+├── drizzle.config.ts
+├── next.config.ts
+├── tailwind.config.ts (또는 postcss)
+├── tsconfig.json
+└── package.json
+```
+
+---
+
+## 주요 API
+
+| 경로                                       | 메서드       | 설명                                                    |
+| ------------------------------------------ | ------------ | ------------------------------------------------------- |
+| `/api/restaurants`                         | GET          | 맛집 목록 (필터: category, priceRange, situation, sort) |
+| `/api/restaurants`                         | POST         | 맛집 등록                                               |
+| `/api/restaurants/[id]`                    | GET          | 맛집 상세 (rid 기준)                                    |
+| `/api/review`                              | GET          | 리뷰 목록 (rid)                                         |
+| `/api/review`                              | POST         | 리뷰 작성                                               |
+| `/api/search`                              | GET          | 검색 (q: 검색어, 식당명·음식명)                         |
+| `/api/search/suggest`                      | GET          | 검색 자동완성                                           |
+| `/api/together-posts`                      | GET          | 같이먹기 목록                                           |
+| `/api/together-posts/[postId]`             | GET/PATCH 등 | 게시글 상세·수정                                        |
+| `/api/together-posts/[postId]/participate` | POST         | 참여                                                    |
+| `/api/ideal-cup`                           | GET          | 이상형 컵                                               |
+| `/api/ideal-cup/result`                    | GET          | 이상형 컵 결과                                          |
+
+---
+
+## DB (Drizzle)
+
+- **스키마**: `src/lib/db/schema.ts`
+- **클라이언트**: `src/lib/db/client.ts` (pg Pool + Drizzle)
+- **주요 테이블**: `stores`, `reviews`, `foods`, `store_foods`, `together_posts`, `together_participants` (스키마명: `foodia`)
 ## 🎨 디자인 시스템
 
 ### 컬러 팔레트
@@ -131,9 +191,8 @@
 
 ### 1. 홈 (/)
 
-- 지역 검색 입력창
-- "내 주변 맛집 찾기" CTA
-- 자주 찾는 지역 빠른 선택
+- 식당 이름 및 음식 검색
+- 음식 이상형 월드컵
 - 음식 종류별 카테고리 버튼
 
 ### 2. 검색 결과 (/search)
@@ -153,23 +212,18 @@
 
 - 별점 선택 (1-5점)
 - 한줄 리뷰 입력
-- 태그 선택
 
-### 5. 저장 목록 (/saved)
-
-- 북마크한 맛집 리스트
-- 상황별 필터
-
-### 6. 같이먹기 게시판 (/together/:restaurantId)
+### 5. 같이먹기 게시판 (/together/:restaurantId)
 
 - 모집글 리스트
 - 관심 표시 버튼
 
-### 7. 같이먹기 글 작성 (/together/write/:restaurantId)
+### 6. 같이먹기 글 작성 (/together/write/:restaurantId)
 
+- 닉네임 입력
 - 모집글 입력
-- 시간대/상황 선택
 - 모집 인원 선택
+- 오픈채팅방 링크 입력
 
 ### 8. 마이페이지 (/profile)
 
@@ -182,26 +236,29 @@
 
 ### Developer 1: 검색/위치/필터
 
-- 홈 화면
-- 검색 결과
-- 필터 로직
+- 식당 리스트
+- 식당 상세 개선
+- 데이터 크롤링
+- 검색 및 필터
 
-### Developer 2: 상세/리뷰
+### Developer 2: DB/리뷰
 
-- 맛집 상세
 - 리뷰 작성
 - 리뷰 리스트
+- DB 스키마 작성
+- 식당 상세 초안
 
-### Developer 3: 저장 기능
+### Developer 3: 음식 이상형 월드컵
 
-- 저장 목록
-- 북마크 상태 관리
+- 홈 화면 및 UI
+- 음식 이상형 월드컵
+- 우승 메뉴 식당 추천
 
-### Developer 4: 같이먹기 + 공통 UI
+### Developer 4: 같이먹기
 
-- 같이먹기 게시판
-- 같이먹기 글 작성
-- 공통 레이아웃
+- 같이먹기 모집 게시판 조회 기능
+- 같이먹기 모집 공고 글 작성 기능
+- 같이먹기 모집 공고 글에 참여하기 기능
 
 ---
 
@@ -210,7 +267,7 @@
 ### 기본 탐색 플로우
 
 ```
-홈 → 검색 → 필터 적용 → 상세 확인 → 저장 or 리뷰 작성
+홈 → 검색 → 필터 적용 → 상세 확인 → 리뷰 작성
 ```
 
 ### 같이먹기 플로우
@@ -219,37 +276,18 @@
 상세 → 같이먹기 게시판 → 관심 표시 or 글 작성
 ```
 
----
+### 같이먹기 참여 플로우
 
-## ⏱️ 5일 개발 일정
+```
+홈 → 같이먹기 모집 공고 → 참여하기
+```
 
-### Day 1: 기본 구조
+### 이상형 월드컵 플로우
 
-- 프로젝트 초기 설정
-- 라우팅 구조
-- 공통 컴포넌트
+```
+홈 → 음식 이상형 월드컵 → 추천 음식점
+```
 
-### Day 2: 핵심 탐색
-
-- 홈 화면
-- 검색 결과
-- 필터/정렬
-
-### Day 3: 상세/리뷰
-
-- 맛집 상세
-- 리뷰 작성
-
-### Day 4: 저장/같이먹기
-
-- 저장 목록
-- 같이먹기 게시판
-
-### Day 5: 통합/완성도
-
-- 전체 플로우 테스트
-- 반응형 검증
-- UI 개선
 
 ---
 
@@ -257,43 +295,26 @@
 
 ### 성능
 
-- 목 데이터로 빠른 응답
-- 이미지 최적화 (Unsplash)
-- 컴포넌트 메모이제이션
-
-### 접근성
-
-- Semantic HTML
-- ARIA 레이블
-- 키보드 네비게이션
-- 충분한 색상 대비
+- 평균 별점 및 리뷰 수 기능 메모이제이션 활용
 
 ### 반응형
 
-- 모바일 우선 (320px~)
-- 최대 너비 제한 (448px)
+- 모바일 우선 반응형 웹
 - 태블릿/데스크톱 대응
 
 ---
 
 ## 📝 다음 단계 (MVP 이후)
 
-### Phase 2: 백엔드 연동
-
-- Supabase 인증 및 데이터베이스
-- 실제 맛집 데이터 API
-- 서버 저장 (리뷰, 북마크)
-
 ### Phase 3: 고도화
 
-- 카카오맵 API 연동
+- 지도 API 연동
 - 실시간 위치 기반 검색
 - 이미지 업로드
 - 푸시 알림
 
 ### Phase 4: 확장
 
-- 다른 지역 추가
 - 추천 알고리즘
 - 포인트 시스템
 
@@ -305,55 +326,17 @@
 
 ---
 
-## 🎉 MVP 완성!
-
-이 프로젝트는 **4명의 개발자가 5일 안에 구현 가능한 현실적인 MVP**로 설계되었습니다.
-
 ### 핵심 포인트
 
 ✅ 빠른 탐색 중심의 단순한 구조  
 ✅ 재사용 가능한 컴포넌트  
 ✅ 명확한 기능 분업 구조  
 ✅ 모바일 우선 반응형 디자인  
-✅ 목 데이터로 즉시 동작
 
 ---
 
-**Made with ❤️ by Foodia Team**
+# Getting Started
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+pnpm i
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---

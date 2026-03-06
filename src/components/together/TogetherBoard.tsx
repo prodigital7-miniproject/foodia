@@ -143,7 +143,7 @@ export function TogetherBoard() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-0 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col"> {/* 전체 높이 확보 */}
 
       {/* ── 헤더 ── */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
@@ -161,11 +161,16 @@ export function TogetherBoard() {
           </div>
         </div>
       </header>
-      <div className="flex-grow">
-        <div className="max-w-screen-lg mx-auto px-4 pt-4">
 
-          {/* ── 식당 정보 카드 ── */}
-          <div className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-100 flex gap-3">
+      {/* ── 컨텐츠 영역 ── */}
+      <div className="flex-grow"> {/* 이 부분이 남는 공간을 채워 푸터를 아래로 밉니다 */}
+        <div className="max-w-screen-lg mx-auto px-4 pt-4 pb-28">
+
+          {/* ── 식당 정보 카드 (클릭 시 이동 기능 포함) ── */}
+          <Link
+            href={`/restaurant/${restaurantId}`}
+            className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-100 flex gap-3 hover:border-orange-300 transition-colors"
+          >
             <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-100 shrink-0">
               <img
                 src={restaurant.imgUrl || "/images/default-restaurant.jpg"}
@@ -178,13 +183,12 @@ export function TogetherBoard() {
               <p className="text-xs text-gray-400 mb-1">{restaurant.category}</p>
               <p className="text-xs text-gray-400 truncate">{restaurant.address}</p>
             </div>
-          </div>
+          </Link>
 
-          {/* ── 모집글 개수 ── */}
+          {/* ── 모집글 개수 및 목록 ── */}
           <p className="text-xs font-semibold text-gray-400 mb-3">
             {posts.length}개의 모집글
           </p>
-
           {/* ── 모집글 목록 ── */}
           {posts.length > 0 ? (
             <div className="space-y-3">
