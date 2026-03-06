@@ -2,316 +2,240 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ArrowLeft, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
 import { SearchInputWithSuggestions } from "@/components/search/SearchInputWithSuggestions";
 import { FilterChips } from "@/components/search/FilterChips";
 import { RestaurantCard } from "@/components/restaurant/RestaurantCard";
-import { BottomNav } from "@/components/layout/BottomNav";
 import type { Restaurant, FoodCategory, PriceRange, SituationTag, SortOption } from "@/lib/types";
 
-/** API와 동일: 화면 필터 값 → DB/응답에 올 수 있는 값들 (검색 결과 클라이언트 필터용) */
 const CATEGORY_ALIAS: Record<string, string[]> = {
-  한식: ["한식", "한국식", "한국음식", "한정식"],
-  중식: ["중식", "중국식", "중국음식"],
-  일식: ["일식", "일본식", "일본음식"],
-  양식: ["양식", "양식/서양식", "이탈리안", "프랑스식"],
-  카페: ["카페", "카페/디저트", "디저트", "베이커리"],
+  한식: ["한식","한국식","한국음식","한정식"],
+  중식: ["중식","중국식","중국음식"],
+  일식: ["일식","일본식","일본음식"],
+  양식: ["양식","양식/서양식","이탈리안","프랑스식"],
+  카페: ["카페","카페/디저트","디저트","베이커리"],
 };
 const PRICE_RANGE_ALIAS: Record<string, string[]> = {
-  "1만원 이하": ["5천원 미만", "5천원대", "1만원대"],
-  "1-2만원": ["1.2만원대", "1.5만원대", "2만원대"],
-  "2만원 이상": ["2.5만원대", "3만원대", "4만원 이상"],
+  "1만원 이하": ["5천원 미만","5천원대","1만원대"],
+  "1-2만원": ["1.2만원대","1.5만원대","2만원대"],
+  "2만원 이상": ["2.5만원대","3만원대","4만원 이상"],
 };
 const SITUATION_ALIAS: Record<string, string[]> = {
-  혼밥: ["혼밥", "혼자먹기", "혼술", "혼카페", "혼자카페", "혼자방문", "혼자할일"],
-  데이트: ["데이트", "데이트하기좋은", "소개팅장소", "소개팅", "데이트코스", "연애인맛집"],
-  친구모임: ["친구모임", "술모임", "회식", "모임", "단체모임", "가족외식", "회식장소", "2차", "차모임"],
+  혼밥: ["혼밥","혼자먹기","혼술","혼카페","혼자카페","혼자방문","혼자할일"],
+  데이트: ["데이트","데이트하기좋은","소개팅장소","소개팅","데이트코스","연애인맛집"],
+  친구모임: ["친구모임","술모임","회식","모임","단체모임","가족외식","회식장소","2차","차모임"],
 };
 
-function matchesCategory(storeCategory: string, selected: string): boolean {
-  if (selected === "전체") return true;
-  const aliases = CATEGORY_ALIAS[selected] ?? [selected];
-  const c = (storeCategory ?? "").trim();
-  if (!c) return false;
-  // DB에 "한식/한정식", "양식/서양식" 등 복합값이 올 수 있음 → alias와 같거나 포함되면 매칭
-  return aliases.some(
-    (a) => c === a || c.includes(a) || a.includes(c)
-  );
+function matchesCategory(c: string, sel: string) {
+  if (sel === "전체") return true;
+  const aliases = CATEGORY_ALIAS[sel] ?? [sel];
+  const v = (c ?? "").trim();
+  return v ? aliases.some(a => v === a || v.includes(a) || a.includes(v)) : false;
 }
-function matchesPriceRange(storePriceRange: string, selected: string): boolean {
-  if (selected === "전체") return true;
-  const aliases = PRICE_RANGE_ALIAS[selected] ?? [selected];
-  return aliases.includes(storePriceRange);
+function matchesPriceRange(p: string, sel: string) {
+  if (sel === "전체") return true;
+  return (PRICE_RANGE_ALIAS[sel] ?? [sel]).includes(p);
 }
-function matchesSituation(storeTags: string[], selected: string): boolean {
-  if (selected === "전체") return true;
-  const aliases = SITUATION_ALIAS[selected] ?? [selected];
-  return storeTags.some((tag) => aliases.some((a) => tag.includes(a) || a.includes(tag)));
+function matchesSituation(tags: string[], sel: string) {
+  if (sel === "전체") return true;
+  const aliases = SITUATION_ALIAS[sel] ?? [sel];
+  return tags.some(t => aliases.some(a => t.includes(a) || a.includes(t)));
 }
 
 export function SearchResults() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const locationParam = searchParams.get("location") || "성수역";
+  const locationParam = searchParams.get("location") || "";
   const categoryParam = searchParams.get("category");
-  const queryParam = searchParams.get("q");
+  const queryParam    = searchParams.get("q");
 
-  const [searchQuery, setSearchQuery] = useState(queryParam ?? locationParam);
-  const [selectedCategory, setSelectedCategory] = useState<FoodCategory>(
-    (categoryParam as FoodCategory) || "전체"
-  );
-  const [selectedPrice, setSelectedPrice] = useState<PriceRange>("전체");
+  const [searchQuery, setSearchQuery]             = useState(queryParam ?? locationParam);
+  const [selectedCategory, setSelectedCategory]   = useState<FoodCategory>((categoryParam as FoodCategory) || "전체");
+  const [selectedPrice, setSelectedPrice]         = useState<PriceRange>("전체");
   const [selectedSituation, setSelectedSituation] = useState<SituationTag>("전체");
-  const [sortBy, setSortBy] = useState<SortOption>("distance");
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy]                       = useState<SortOption>("distance");
+  const [bookmarkedIds, setBookmarkedIds]         = useState<Set<string>>(new Set());
+  const [restaurants, setRestaurants]             = useState<Restaurant[]>([]);
+  const [loading, setLoading]                     = useState(true);
+  const [error, setError]                         = useState<string | null>(null);
+  const [filterOpen, setFilterOpen]               = useState(false);
 
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const isSearchByQuery = !!queryParam?.length;
 
-  const isSearchByQuery = queryParam != null && queryParam.length > 0;
+  useEffect(() => { setSearchQuery(queryParam ?? locationParam); }, [queryParam, locationParam]);
 
-  // URL의 q와 동기화
-  useEffect(() => {
-    setSearchQuery(queryParam ?? locationParam);
-  }, [queryParam, locationParam]);
-
-  // 키워드 검색 모드: /api/search?q=
   useEffect(() => {
     if (!isSearchByQuery) return;
-    const controller = new AbortController();
-    const { signal } = controller;
-    setLoading(true);
-    setError(null);
-    fetch(`/api/search?q=${encodeURIComponent(queryParam!)}`, { signal })
-      .then((res) => res.json())
-      .then((json) => {
-        if (signal.aborted) return;
-        if (json.success && Array.isArray(json.data)) {
-          setRestaurants(json.data);
-        } else {
-          setRestaurants([]);
-          setError(json.error?.message ?? "검색 결과를 불러오지 못했습니다.");
-        }
-      })
-      .catch((err) => {
-        if (err.name === "AbortError") return;
-        setRestaurants([]);
-        setError("검색 결과를 불러오지 못했습니다.");
-      })
-      .finally(() => {
-        if (!signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
+    const ctrl = new AbortController();
+    setLoading(true); setError(null);
+    fetch(`/api/search?q=${encodeURIComponent(queryParam!)}`, { signal: ctrl.signal })
+      .then(r => r.json())
+      .then(j => { if (!ctrl.signal.aborted) setRestaurants(j.success ? j.data : []); })
+      .catch(e => { if (e.name !== "AbortError") { setRestaurants([]); setError("검색 결과를 불러오지 못했습니다."); } })
+      .finally(() => { if (!ctrl.signal.aborted) setLoading(false); });
+    return () => ctrl.abort();
   }, [queryParam, isSearchByQuery]);
 
-  // 필터/목록 모드: /api/restaurants
   useEffect(() => {
     if (isSearchByQuery) return;
-    const controller = new AbortController();
-    const { signal } = controller;
-
-    const params = new URLSearchParams();
-    if (selectedCategory && selectedCategory !== "전체") params.set("category", selectedCategory);
-    if (selectedPrice && selectedPrice !== "전체") params.set("priceRange", selectedPrice);
-    if (selectedSituation && selectedSituation !== "전체") params.set("situation", selectedSituation);
-    params.set("sort", sortBy);
-
-    setLoading(true);
-    setError(null);
-    fetch(`/api/restaurants?${params.toString()}`, { signal })
-      .then((res) => res.json())
-      .then((json) => {
-        if (signal.aborted) return;
-        if (json.success && Array.isArray(json.data)) {
-          setRestaurants(json.data);
-        } else {
-          setRestaurants([]);
-          setError(json.error?.message ?? "목록을 불러오지 못했습니다.");
-        }
-      })
-      .catch((err) => {
-        if (err.name === "AbortError") return;
-        setRestaurants([]);
-        setError("목록을 불러오지 못했습니다.");
-      })
-      .finally(() => {
-        if (!signal.aborted) setLoading(false);
-      });
-
-    return () => controller.abort();
+    const ctrl = new AbortController();
+    const p = new URLSearchParams();
+    if (selectedCategory !== "전체") p.set("category", selectedCategory);
+    if (selectedPrice !== "전체") p.set("priceRange", selectedPrice);
+    if (selectedSituation !== "전체") p.set("situation", selectedSituation);
+    p.set("sort", sortBy);
+    setLoading(true); setError(null);
+    fetch(`/api/restaurants?${p}`, { signal: ctrl.signal })
+      .then(r => r.json())
+      .then(j => { if (!ctrl.signal.aborted) setRestaurants(j.success ? j.data : []); })
+      .catch(e => { if (e.name !== "AbortError") { setRestaurants([]); setError("목록을 불러오지 못했습니다."); } })
+      .finally(() => { if (!ctrl.signal.aborted) setLoading(false); });
+    return () => ctrl.abort();
   }, [isSearchByQuery, selectedCategory, selectedPrice, selectedSituation, sortBy]);
 
-  const foodCategories: FoodCategory[] = ["전체", "한식", "중식", "일식", "양식", "카페"];
-  const priceRanges: PriceRange[] = ["전체", "1만원 이하", "1-2만원", "2만원 이상"];
-  const situationTags: SituationTag[] = ["전체", "혼밥", "데이트", "친구모임"];
-
-  const handleSearchSubmit = (query: string) => {
-    if (!query.trim()) return;
-    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-  };
-
-  // 검색 모드: 클라이언트에서 필터/정렬 적용 (API와 동일한 alias로 매칭). 목록 모드: API가 이미 필터링함.
   const filteredRestaurants = useMemo(() => {
     let list = restaurants;
     if (isSearchByQuery) {
-      list = list.filter((r) => matchesCategory(r.category, selectedCategory));
-      list = list.filter((r) =>
-        matchesPriceRange(r.priceRange ?? "", selectedPrice)
-      );
-      list = list.filter((r) => matchesSituation(r.tags ?? [], selectedSituation));
-      const parseDist = (d: string | number | undefined): number => {
-        if (d == null || d === "") return Infinity;
-        const n = parseInt(String(d).replace(/\D/g, ""), 10);
-        return Number.isNaN(n) ? Infinity : n;
-      };
-      list = [...list].sort((a, b) =>
-        sortBy === "rating"
-          ? b.rating - a.rating
-          : parseDist(a.distance) - parseDist(b.distance)
-      );
+      const parseDist = (d: string | number | undefined) => { const n = parseInt(String(d ?? "").replace(/\D/g,""),10); return isNaN(n) ? Infinity : n; };
+      list = list
+        .filter(r => matchesCategory(r.category, selectedCategory))
+        .filter(r => matchesPriceRange(r.priceRange ?? "", selectedPrice))
+        .filter(r => matchesSituation(r.tags ?? [], selectedSituation))
+        .sort((a,b) => sortBy === "rating" ? b.rating - a.rating : parseDist(a.distance) - parseDist(b.distance));
     }
-    return list.map((r) => ({
-      ...r,
-      isBookmarked: bookmarkedIds.has(r.id),
-    }));
-  }, [
-    restaurants,
-    bookmarkedIds,
-    isSearchByQuery,
-    selectedCategory,
-    selectedPrice,
-    selectedSituation,
-    sortBy,
-  ]);
+    return list.map(r => ({ ...r, isBookmarked: bookmarkedIds.has(r.id) }));
+  }, [restaurants, bookmarkedIds, isSearchByQuery, selectedCategory, selectedPrice, selectedSituation, sortBy]);
 
-  const handleBookmark = (id: string) => {
-    setBookmarkedIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
+
+  const foodCategories: FoodCategory[] = ["전체","한식","중식","일식","양식","카페"];
+  const priceRanges:    PriceRange[]   = ["전체","1만원 이하","1-2만원","2만원 이상"];
+  const situationTags:  SituationTag[] = ["전체","혼밥","데이트","친구모임"];
+
+  // 활성 필터 개수
+  const activeFilterCount = [
+    selectedCategory !== "전체",
+    selectedPrice !== "전체",
+    selectedSituation !== "전체",
+  ].filter(Boolean).length;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-md mx-auto px-4 py-3">
-          <div className="flex items-center gap-3 mb-3">
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full">
-              <ArrowLeft size={20} className="text-gray-700" />
-            </button>
-            <div className="flex-1">
-              <SearchInputWithSuggestions
-                variant="compact"
-                placeholder="음식점·음식 이름 검색"
-                value={searchQuery}
-                onChange={setSearchQuery}
-                onSubmit={handleSearchSubmit}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <div className="max-w-md mx-auto px-4 py-4">
-        {/* Title & Result Count */}
+      {/* ── 헤더: 뒤로가기 + 타이틀만 ── */}
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-screen-lg mx-auto px-4 h-14 flex items-center gap-3">
+          <button
+            onClick={() => router.back()}
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors shrink-0"
+          >
+            <ArrowLeft size={20} className="text-gray-600" />
+          </button>
+          <h1 className="text-base font-bold text-gray-900 truncate">
+            {isSearchByQuery ? `"${queryParam}"` : `${locationParam} 맛집`}
+          </h1>
+          <span className="ml-auto text-xs text-gray-400 shrink-0">
+            {!loading && `${filteredRestaurants.length}개`}
+          </span>
+        </div>
+      </header>
+
+      <div className="max-w-screen-lg mx-auto px-4 py-4">
+
+        {/* ── 검색창 (헤더 아래 본문 상단) ── */}
         <div className="mb-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">
-            {isSearchByQuery ? `"${queryParam}" 검색 결과` : `${locationParam} 맛집`}
-          </h2>
-          <p className="text-sm text-gray-600">{filteredRestaurants.length}개의 맛집을 찾았어요</p>
+          <SearchInputWithSuggestions
+            variant="default"
+            placeholder="음식점 · 음식 이름을 검색하세요"
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSubmit={(q) => { if (q.trim()) router.push(`/search?q=${encodeURIComponent(q.trim())}`); }}
+          />
         </div>
 
-        {/* Filters & Sort: 검색/목록 공통 UI */}
-        <div className="space-y-3 mb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <SlidersHorizontal size={16} className="text-gray-600" />
-              <span className="text-sm font-semibold text-gray-700">음식 종류</span>
-            </div>
+        {/* ── 필터 토글 바 ── */}
+        <div className="mb-4">
+          {/* 카테고리 칩은 항상 노출 */}
+          <div className="flex items-center gap-2 mb-2">
             <FilterChips
               options={foodCategories}
               selected={selectedCategory}
-              onChange={(value) => setSelectedCategory(value as FoodCategory)}
+              onChange={v => setSelectedCategory(v as FoodCategory)}
             />
           </div>
 
-          <div>
-            <span className="text-sm font-semibold text-gray-700 mb-2 block">가격대</span>
-            <FilterChips
-              options={priceRanges}
-              selected={selectedPrice}
-              onChange={(value) => setSelectedPrice(value as PriceRange)}
-            />
-          </div>
+          {/* 필터 열기 버튼 */}
+          <button
+            onClick={() => setFilterOpen(v => !v)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-orange-500 transition-colors"
+          >
+            <SlidersHorizontal size={13} />
+            상세 필터
+            {activeFilterCount > 0 && (
+              <span className="bg-orange-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+            {filterOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+          </button>
 
-          <div>
-            <span className="text-sm font-semibold text-gray-700 mb-2 block">상황</span>
-            <FilterChips
-              options={situationTags}
-              selected={selectedSituation}
-              onChange={(value) => setSelectedSituation(value as SituationTag)}
-            />
-          </div>
-
-          <div className="flex items-center gap-2 pt-2">
-            <span className="text-sm text-gray-600">정렬:</span>
-            <button
-              onClick={() => setSortBy("distance")}
-              className={`text-sm px-3 py-1 rounded-full ${
-                sortBy === "distance"
-                  ? "bg-orange-600 text-white"
-                  : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              거리순
-            </button>
-            <button
-              onClick={() => setSortBy("rating")}
-              className={`text-sm px-3 py-1 rounded-full ${
-                sortBy === "rating"
-                  ? "bg-orange-600 text-white"
-                  : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              평점순
-            </button>
-          </div>
-        </div>
-
-        {/* Results */}
-        <div className="space-y-4">
-          {loading ? (
-            <div className="text-center py-12 text-gray-500">로딩 중...</div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 mb-2">{error}</p>
-            </div>
-          ) : filteredRestaurants.length > 0 ? (
-            filteredRestaurants.map((restaurant) => (
-              <RestaurantCard
-                key={restaurant.id}
-                restaurant={restaurant}
-                onBookmark={handleBookmark}
-              />
-            ))
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 mb-2">검색 결과가 없습니다</p>
-              <p className="text-sm text-gray-400">다른 필터 조건을 시도해보세요</p>
+          {/* 펼쳐지는 상세 필터 */}
+          {filterOpen && (
+            <div className="mt-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+              <div>
+                <p className="text-xs font-semibold text-gray-400 mb-2">가격대</p>
+                <FilterChips options={priceRanges} selected={selectedPrice} onChange={v => setSelectedPrice(v as PriceRange)} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 mb-2">상황</p>
+                <FilterChips options={situationTags} selected={selectedSituation} onChange={v => setSelectedSituation(v as SituationTag)} />
+              </div>
+              <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                <span className="text-xs font-semibold text-gray-400">정렬</span>
+                {(["distance","rating"] as SortOption[]).map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => setSortBy(opt)}
+                    className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-all ${
+                      sortBy === opt
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-100 text-gray-500 hover:bg-orange-50 hover:text-orange-500"
+                    }`}
+                  >
+                    {opt === "distance" ? "거리순" : "평점순"}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
+
+        {/* ── 결과 목록 ── */}
+        {loading ? (
+          <div className="space-y-3">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="bg-white rounded-2xl h-28 animate-pulse" />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-16">
+            <p className="text-gray-400 text-sm">{error}</p>
+          </div>
+        ) : filteredRestaurants.length > 0 ? (
+          <div className="space-y-3">
+            {filteredRestaurants.map(r => (
+              <RestaurantCard key={r.id} restaurant={r} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <p className="text-3xl mb-3">🍽️</p>
+            <p className="text-gray-600 font-semibold">검색 결과가 없어요</p>
+            <p className="text-sm text-gray-400 mt-1">다른 필터 조건을 시도해보세요</p>
+          </div>
+        )}
       </div>
 
-      <BottomNav />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ArrowLeft } from "lucide-react";
-import { BottomNav } from "@/components/layout/BottomNav";
+
 
 export type TogetherPostDetailData = {
   id: number;
@@ -303,7 +303,6 @@ export function TogetherPostDetail({ data }: TogetherPostDetailProps) {
         </div>
       )}
 
-      <BottomNav />
     </div>
   );
 }

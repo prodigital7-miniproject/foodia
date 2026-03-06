@@ -7,28 +7,24 @@ interface SearchBarProps {
   onSubmit?: () => void;
 }
 
-export function SearchBar({
-  placeholder = "지역명을 검색하세요",
-  value,
-  onChange,
-  onSubmit,
-}: SearchBarProps) {
+export function SearchBar({ placeholder = "지역명을 검색하세요", value, onChange, onSubmit }: SearchBarProps) {
   return (
-    <div className="relative">
-      <Search
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-900"
-        size={20}
-        strokeWidth={2}
-      />
+    <div className="flex items-center gap-2 bg-white border-2 border-orange-400 rounded-2xl px-5 py-3.5 shadow-sm focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+      <Search className="w-5 h-5 text-orange-400 shrink-0" />
       <input
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && onSubmit?.()}
-        className="w-full pl-12 pr-4 py-3 bg-white rounded-full text-gray-900 placeholder:text-gray-500  
-             border-2 border-amber-900"
+        className="flex-1 bg-transparent text-sm text-gray-700 placeholder:text-gray-400 outline-none"
       />
+      <button
+        onClick={onSubmit}
+        className="shrink-0 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-4 py-1.5 rounded-xl transition-colors"
+      >
+        검색
+      </button>
     </div>
   );
 }

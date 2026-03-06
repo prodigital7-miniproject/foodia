@@ -26,7 +26,7 @@ components/
 ├── profile/       # 마이페이지
 │   └── ProfilePage.tsx
 ├── layout/        # 공통 레이아웃
-│   └── BottomNav.tsx
+│   └── Header.tsx
 ├── ui/            # 공통 UI 프리미티브 (버튼, 카드 등)
 └── figma/         # Figma 연동 컴포넌트
 ```

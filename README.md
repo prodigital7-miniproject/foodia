@@ -86,7 +86,7 @@
 /src
   /app
     /components
-      BottomNav.tsx          # 하단 탭 네비게이션
+      Header.tsx             # 상단 헤더
       SearchBar.tsx          # 검색 입력창
       FilterChips.tsx        # 필터 칩 리스트
       RestaurantCard.tsx     # 맛집 카드

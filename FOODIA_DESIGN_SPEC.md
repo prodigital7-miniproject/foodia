@@ -376,11 +376,6 @@ Chip (Filter):
 
 ## 🧩 공통 컴포넌트
 
-### 1. BottomNav
-- 하단 고정 탭바 네비게이션
-- 4개 탭: 홈, 탐색, 저장, 마이
-- 활성 탭은 오렌지 색상
-
 ### 2. SearchBar
 - 검색 아이콘 + 입력창
 - 라운드 형태 (rounded-full)
@@ -523,10 +518,9 @@ Chip (Filter):
 - 같이먹기 게시판 (/together/:restaurantId)
 - 같이먹기 글 작성 (/together/write/:restaurantId)
 - 마이페이지 (/profile)
-- 공통 레이아웃 (BottomNav)
+- 공통 레이아웃 (Header)
 
 **담당 컴포넌트:**
-- BottomNav
 - 모집글 카드
 - 공통 레이아웃
 
@@ -544,7 +538,7 @@ Chip (Filter):
 - [필수] 프로젝트 초기 설정
 - [필수] 라우팅 구조 설정
 - [필수] 목 데이터 준비
-- [필수] 공통 컴포넌트 (BottomNav, SearchBar, FilterChips)
+- [필수] 공통 컴포넌트 (Header, SearchBar, FilterChips)
 - [필수] 디자인 시스템 CSS 설정
 
 ### Day 2: 핵심 탐색 기능
@@ -592,7 +586,6 @@ Chip (Filter):
 /src
   /app
     /components
-      BottomNav.tsx          # 하단 탭 네비게이션
       SearchBar.tsx          # 검색 입력창
       FilterChips.tsx        # 필터 칩 리스트
       RestaurantCard.tsx     # 맛집 카드

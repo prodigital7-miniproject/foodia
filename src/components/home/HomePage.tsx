@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CategoryButton } from "@/components/home/CategoryButton";
-import { BottomNav } from "@/components/layout/BottomNav";
+
 import { Header } from "../layout/Header";
 import { SearchInputWithSuggestions } from "@/components/search/SearchInputWithSuggestions";
 import TogetherSlider from "./TogetherSlider";
@@ -127,7 +127,6 @@ export function HomePage() {
         </div>
       </footer>
 
-      {/* <BottomNav /> */}
     </div>
   );
 }
