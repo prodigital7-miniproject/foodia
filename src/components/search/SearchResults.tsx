@@ -9,6 +9,46 @@ import { RestaurantCard } from "@/components/restaurant/RestaurantCard";
 import { BottomNav } from "@/components/layout/BottomNav";
 import type { Restaurant, FoodCategory, PriceRange, SituationTag, SortOption } from "@/lib/types";
 
+/** API와 동일: 화면 필터 값 → DB/응답에 올 수 있는 값들 (검색 결과 클라이언트 필터용) */
+const CATEGORY_ALIAS: Record<string, string[]> = {
+  한식: ["한식", "한국식", "한국음식", "한정식"],
+  중식: ["중식", "중국식", "중국음식"],
+  일식: ["일식", "일본식", "일본음식"],
+  양식: ["양식", "양식/서양식", "이탈리안", "프랑스식"],
+  카페: ["카페", "카페/디저트", "디저트", "베이커리"],
+};
+const PRICE_RANGE_ALIAS: Record<string, string[]> = {
+  "1만원 이하": ["5천원 미만", "5천원대", "1만원대"],
+  "1-2만원": ["1.2만원대", "1.5만원대", "2만원대"],
+  "2만원 이상": ["2.5만원대", "3만원대", "4만원 이상"],
+};
+const SITUATION_ALIAS: Record<string, string[]> = {
+  혼밥: ["혼밥", "혼자먹기", "혼술", "혼카페", "혼자카페", "혼자방문", "혼자할일"],
+  데이트: ["데이트", "데이트하기좋은", "소개팅장소", "소개팅", "데이트코스", "연애인맛집"],
+  친구모임: ["친구모임", "술모임", "회식", "모임", "단체모임", "가족외식", "회식장소", "2차", "차모임"],
+};
+
+function matchesCategory(storeCategory: string, selected: string): boolean {
+  if (selected === "전체") return true;
+  const aliases = CATEGORY_ALIAS[selected] ?? [selected];
+  const c = (storeCategory ?? "").trim();
+  if (!c) return false;
+  // DB에 "한식/한정식", "양식/서양식" 등 복합값이 올 수 있음 → alias와 같거나 포함되면 매칭
+  return aliases.some(
+    (a) => c === a || c.includes(a) || a.includes(c)
+  );
+}
+function matchesPriceRange(storePriceRange: string, selected: string): boolean {
+  if (selected === "전체") return true;
+  const aliases = PRICE_RANGE_ALIAS[selected] ?? [selected];
+  return aliases.includes(storePriceRange);
+}
+function matchesSituation(storeTags: string[], selected: string): boolean {
+  if (selected === "전체") return true;
+  const aliases = SITUATION_ALIAS[selected] ?? [selected];
+  return storeTags.some((tag) => aliases.some((a) => tag.includes(a) || a.includes(tag)));
+}
+
 export function SearchResults() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -112,14 +152,39 @@ export function SearchResults() {
     router.push(`/search?q=${encodeURIComponent(query.trim())}`);
   };
 
-  const filteredRestaurants = useMemo(
-    () =>
-      restaurants.map((r) => ({
-        ...r,
-        isBookmarked: bookmarkedIds.has(r.id),
-      })),
-    [restaurants, bookmarkedIds]
-  );
+  // 검색 모드: 클라이언트에서 필터/정렬 적용 (API와 동일한 alias로 매칭). 목록 모드: API가 이미 필터링함.
+  const filteredRestaurants = useMemo(() => {
+    let list = restaurants;
+    if (isSearchByQuery) {
+      list = list.filter((r) => matchesCategory(r.category, selectedCategory));
+      list = list.filter((r) =>
+        matchesPriceRange(r.priceRange ?? "", selectedPrice)
+      );
+      list = list.filter((r) => matchesSituation(r.tags ?? [], selectedSituation));
+      const parseDist = (d: string | number | undefined): number => {
+        if (d == null || d === "") return Infinity;
+        const n = parseInt(String(d).replace(/\D/g, ""), 10);
+        return Number.isNaN(n) ? Infinity : n;
+      };
+      list = [...list].sort((a, b) =>
+        sortBy === "rating"
+          ? b.rating - a.rating
+          : parseDist(a.distance) - parseDist(b.distance)
+      );
+    }
+    return list.map((r) => ({
+      ...r,
+      isBookmarked: bookmarkedIds.has(r.id),
+    }));
+  }, [
+    restaurants,
+    bookmarkedIds,
+    isSearchByQuery,
+    selectedCategory,
+    selectedPrice,
+    selectedSituation,
+    sortBy,
+  ]);
 
   const handleBookmark = (id: string) => {
     setBookmarkedIds(prev => {
@@ -164,64 +229,62 @@ export function SearchResults() {
           <p className="text-sm text-gray-600">{filteredRestaurants.length}개의 맛집을 찾았어요</p>
         </div>
 
-        {/* Filters: 키워드 검색 모드가 아닐 때만 표시 */}
-        {!isSearchByQuery && (
-          <div className="space-y-3 mb-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <SlidersHorizontal size={16} className="text-gray-600" />
-                <span className="text-sm font-semibold text-gray-700">음식 종류</span>
-              </div>
-              <FilterChips
-                options={foodCategories}
-                selected={selectedCategory}
-                onChange={(value) => setSelectedCategory(value as FoodCategory)}
-              />
+        {/* Filters & Sort: 검색/목록 공통 UI */}
+        <div className="space-y-3 mb-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <SlidersHorizontal size={16} className="text-gray-600" />
+              <span className="text-sm font-semibold text-gray-700">음식 종류</span>
             </div>
-
-            <div>
-              <span className="text-sm font-semibold text-gray-700 mb-2 block">가격대</span>
-              <FilterChips
-                options={priceRanges}
-                selected={selectedPrice}
-                onChange={(value) => setSelectedPrice(value as PriceRange)}
-              />
-            </div>
-
-            <div>
-              <span className="text-sm font-semibold text-gray-700 mb-2 block">상황</span>
-              <FilterChips
-                options={situationTags}
-                selected={selectedSituation}
-                onChange={(value) => setSelectedSituation(value as SituationTag)}
-              />
-            </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <span className="text-sm text-gray-600">정렬:</span>
-              <button
-                onClick={() => setSortBy("distance")}
-                className={`text-sm px-3 py-1 rounded-full ${
-                  sortBy === "distance"
-                    ? "bg-orange-600 text-white"
-                    : "bg-gray-100 text-gray-600"
-                }`}
-              >
-                거리순
-              </button>
-              <button
-                onClick={() => setSortBy("rating")}
-                className={`text-sm px-3 py-1 rounded-full ${
-                  sortBy === "rating"
-                    ? "bg-orange-600 text-white"
-                    : "bg-gray-100 text-gray-600"
-                }`}
-              >
-                평점순
-              </button>
-            </div>
+            <FilterChips
+              options={foodCategories}
+              selected={selectedCategory}
+              onChange={(value) => setSelectedCategory(value as FoodCategory)}
+            />
           </div>
-        )}
+
+          <div>
+            <span className="text-sm font-semibold text-gray-700 mb-2 block">가격대</span>
+            <FilterChips
+              options={priceRanges}
+              selected={selectedPrice}
+              onChange={(value) => setSelectedPrice(value as PriceRange)}
+            />
+          </div>
+
+          <div>
+            <span className="text-sm font-semibold text-gray-700 mb-2 block">상황</span>
+            <FilterChips
+              options={situationTags}
+              selected={selectedSituation}
+              onChange={(value) => setSelectedSituation(value as SituationTag)}
+            />
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <span className="text-sm text-gray-600">정렬:</span>
+            <button
+              onClick={() => setSortBy("distance")}
+              className={`text-sm px-3 py-1 rounded-full ${
+                sortBy === "distance"
+                  ? "bg-orange-600 text-white"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              거리순
+            </button>
+            <button
+              onClick={() => setSortBy("rating")}
+              className={`text-sm px-3 py-1 rounded-full ${
+                sortBy === "rating"
+                  ? "bg-orange-600 text-white"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              평점순
+            </button>
+          </div>
+        </div>
 
         {/* Results */}
         <div className="space-y-4">
