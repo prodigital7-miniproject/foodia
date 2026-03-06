@@ -92,9 +92,12 @@ export default function TogetherSlider({ limit = 20 }: TogetherSliderProps) {
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* 타이틀 및 헤더 */}
-      <div className="flex justify-between items-end px-5 mb-4">
+      <div className="flex justify-between items-end mb-4">
         <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-1">같이먹기 모집 공고</h2>
+        
+          <h2 className="text-base font-bold text-gray-900 mb-2">
+          같이먹기 모집 공고
+          </h2>
           <p className="text-xs text-gray-500 font-medium mb-5">근처에서 함께 식사할 메이트를 찾아보세요</p>
         </div>
         <span className="text-orange-500 font-bold text-sm mb-5">총 {posts.length}개</span>
