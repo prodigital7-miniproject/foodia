@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import response from "@/lib/http/response";
 import {
@@ -67,6 +67,10 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(Math.max(Number(limitParam) || 20, 1), 100);
   const rid = searchParams.get("rid")?.trim();
 
+  // 오늘 0시 0분 0초 (로컬 기준) — 오늘 이후 작성된 공고만
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
   const base = db
     .select({
       id: togetherPostTable.id,
@@ -92,13 +96,19 @@ export async function GET(request: NextRequest) {
         .where(
           and(
             eq(togetherPostTable.rid, rid),
-            eq(storeTable.isDeleted, false)
+            eq(storeTable.isDeleted, false),
+            gte(togetherPostTable.createdAt, startOfToday)
           )
         )
         .orderBy(desc(togetherPostTable.createdAt))
         .limit(limit)
     : await base
-        .where(eq(storeTable.isDeleted, false))
+        .where(
+          and(
+            eq(storeTable.isDeleted, false),
+            gte(togetherPostTable.createdAt, startOfToday)
+          )
+        )
         .orderBy(desc(togetherPostTable.createdAt))
         .limit(limit);
 
